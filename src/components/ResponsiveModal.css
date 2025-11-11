@@ -1,0 +1,329 @@
+/* ============================================
+   RESPONSIVE MODAL COMPONENT
+   ============================================ */
+
+/* Overlay */
+.responsive-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal, 1000);
+  animation: modalFadeIn 0.3s ease-out;
+  padding: 0;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Base Modal Styles */
+.responsive-modal {
+  background: linear-gradient(145deg, #1f1f1f, #0f0f0f);
+  border: 2px solid #333333;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Modal Header */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #333333;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: #cccccc;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  transition: all 0.2s ease;
+  min-width: 32px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-btn:hover {
+  color: #ff4444;
+  transform: scale(1.1);
+}
+
+/* Modal Content */
+.modal-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  color: #cccccc;
+}
+
+/* Scrollbar styling for modal content */
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   SIZE VARIANTS
+   ============================================ */
+
+/* Small Modal */
+.responsive-modal.modal-small {
+  width: 90%;
+  max-width: 400px;
+}
+
+/* Medium Modal (default) */
+.responsive-modal.modal-medium {
+  width: 90%;
+  max-width: 600px;
+}
+
+/* Large Modal */
+.responsive-modal.modal-large {
+  width: 90%;
+  max-width: 900px;
+}
+
+/* ============================================
+   MOBILE STYLES (< 768px)
+   ============================================ */
+@media (max-width: 767px) {
+  .responsive-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  /* Mobile Full-Screen Modal */
+  .responsive-modal.mobile-fullscreen {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    border: none;
+    animation: modalSlideUp 0.3s ease-out;
+  }
+
+  @keyframes modalSlideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  /* Mobile Bottom Sheet */
+  .responsive-modal.mobile-bottom-sheet {
+    width: 100%;
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 16px 16px 0 0;
+    border-bottom: none;
+    animation: modalSlideUp 0.3s ease-out;
+  }
+
+  .responsive-modal.mobile-bottom-sheet .modal-header {
+    position: relative;
+    padding-top: 24px;
+  }
+
+  /* Bottom sheet handle indicator */
+  .responsive-modal.mobile-bottom-sheet .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    background: #555555;
+    border-radius: 2px;
+  }
+
+  .modal-header {
+    padding: 16px 20px;
+  }
+
+  .modal-title {
+    font-size: 1.25rem;
+  }
+
+  .modal-close-btn {
+    font-size: 1.25rem;
+    min-width: 44px; /* Touch target minimum */
+    min-height: 44px;
+  }
+
+  .modal-content {
+    padding: 20px;
+  }
+}
+
+/* Very small mobile screens */
+@media (max-width: 480px) {
+  .modal-header {
+    padding: 14px 16px;
+  }
+
+  .modal-title {
+    font-size: 1.1rem;
+  }
+
+  .modal-content {
+    padding: 16px;
+  }
+}
+
+/* ============================================
+   TABLET STYLES (768px - 1023px)
+   ============================================ */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .responsive-modal-overlay {
+    padding: 20px;
+  }
+
+  .responsive-modal.tablet-modal {
+    width: 85%;
+  }
+
+  .responsive-modal.modal-small {
+    max-width: 450px;
+  }
+
+  .responsive-modal.modal-medium {
+    max-width: 650px;
+  }
+
+  .responsive-modal.modal-large {
+    max-width: 850px;
+  }
+
+  .modal-header {
+    padding: 18px 22px;
+  }
+
+  .modal-title {
+    font-size: 1.4rem;
+  }
+
+  .modal-content {
+    padding: 22px;
+  }
+}
+
+/* ============================================
+   DESKTOP STYLES (>= 1024px)
+   ============================================ */
+@media (min-width: 1024px) {
+  .responsive-modal-overlay {
+    padding: 40px;
+  }
+
+  .responsive-modal.desktop-modal {
+    width: 80%;
+  }
+
+  .responsive-modal.modal-small {
+    max-width: 500px;
+  }
+
+  .responsive-modal.modal-medium {
+    max-width: 700px;
+  }
+
+  .responsive-modal.modal-large {
+    max-width: 1000px;
+  }
+
+  /* Hover effects for desktop */
+  .modal-close-btn:hover {
+    background: rgba(255, 68, 68, 0.1);
+    border-radius: 4px;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Focus styles */
+.modal-close-btn:focus-visible {
+  outline: 2px solid #ff4444;
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .responsive-modal-overlay,
+  .responsive-modal {
+    animation: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .responsive-modal {
+    border-width: 3px;
+  }
+
+  .modal-header {
+    border-bottom-width: 2px;
+  }
+}

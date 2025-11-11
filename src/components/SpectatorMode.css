@@ -1,0 +1,616 @@
+/* Spectator Mode Styles */
+.spectator-mode {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.spectator-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-bottom: 2px solid #ffd700;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.header-content h2 {
+  color: #ffd700;
+  margin: 0 0 8px 0;
+  font-size: 1.8em;
+  font-weight: bold;
+}
+
+.header-content p {
+  color: #cccccc;
+  margin: 0;
+  font-size: 1.1em;
+}
+
+.leave-spectator-btn {
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+}
+
+.leave-spectator-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 71, 87, 0.4);
+}
+
+.spectator-content {
+  display: grid;
+  grid-template-columns: 300px 1fr 350px;
+  gap: 20px;
+  padding: 20px;
+  height: calc(100vh - 120px);
+  overflow: hidden;
+}
+
+/* Left Panel - Tournament Status & Match List */
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.tournament-status {
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.status-header h3 {
+  color: #ffd700;
+  margin: 0;
+  font-size: 1.3em;
+}
+
+.player-status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.player-status-badge.eliminated {
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  color: white;
+}
+
+.tournament-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-item .label {
+  color: #cccccc;
+  font-size: 0.95em;
+}
+
+.info-item .value {
+  color: #00d4ff;
+  font-weight: bold;
+}
+
+.spectator-match-list {
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  flex: 1;
+}
+
+.spectator-match-list h3 {
+  color: #00d4ff;
+  margin: 0 0 16px 0;
+  font-size: 1.3em;
+}
+
+.no-matches {
+  text-align: center;
+  padding: 40px 20px;
+  color: #888888;
+}
+
+.matches-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.match-card {
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.match-card:hover {
+  background: rgba(0, 212, 255, 0.2);
+  border-color: rgba(0, 212, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.match-card.selected {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: #ffd700;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.match-players {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.match-players .player-name {
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 0.95em;
+}
+
+.match-players .vs-divider {
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.match-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9em;
+}
+
+.round-info {
+  color: #cccccc;
+}
+
+.match-status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 0.8em;
+}
+
+.match-status.in_progress {
+  background: rgba(255, 71, 87, 0.2);
+  color: #ff4757;
+}
+
+.match-status.scheduled {
+  background: rgba(255, 215, 0, 0.2);
+  color: #ffd700;
+}
+
+/* Center Panel - Match Viewer */
+.center-panel {
+  display: flex;
+  flex-direction: column;
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.no-match-selected {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #888888;
+  text-align: center;
+}
+
+.match-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.match-header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.match-header h3 {
+  color: #ffd700;
+  margin: 0 0 16px 0;
+  font-size: 1.4em;
+}
+
+.match-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.players-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.player-info .player-name {
+  color: #00d4ff;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.player-info .player-score {
+  color: #cccccc;
+  font-size: 0.9em;
+}
+
+.vs-display {
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.match-status-display {
+  text-align: center;
+}
+
+.status-badge {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.95em;
+}
+
+.status-badge.in_progress {
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+.status-badge.scheduled {
+  background: linear-gradient(135deg, #ffd700, #ffb700);
+  color: #1a1a2e;
+}
+
+.game-view-area {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.live-game-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+.game-info {
+  text-align: center;
+}
+
+.game-info h4 {
+  color: #ff4757;
+  margin: 0 0 8px 0;
+  font-size: 1.3em;
+}
+
+.spectator-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: rgba(108, 92, 231, 0.2);
+  border: 1px solid rgba(108, 92, 231, 0.4);
+  border-radius: 20px;
+  color: #a29bfe;
+  font-size: 0.9em;
+}
+
+.spectator-game-board {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  flex: 1;
+}
+
+.round-counter {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.2em;
+  color: #ffd700;
+  font-weight: bold;
+}
+
+.players-status {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 40px;
+}
+
+.player-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.player-status .player-name {
+  color: #00d4ff;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.status-indicator {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.status-indicator.thinking {
+  background: rgba(255, 215, 0, 0.2);
+  color: #ffd700;
+  animation: thinking 1.5s infinite;
+}
+
+.waiting-game-view {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.waiting-info {
+  text-align: center;
+  color: #888888;
+}
+
+/* Right Panel - Spectator Chat */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.spectator-chat {
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid rgba(108, 92, 231, 0.3);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.spectator-chat.collapsed {
+  height: auto;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.chat-header:hover {
+  background: linear-gradient(135deg, #5f4fcf, #9085e8);
+}
+
+.chat-header h4 {
+  color: white;
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.chat-toggle {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.no-messages {
+  text-align: center;
+  color: #888888;
+  padding: 40px 20px;
+}
+
+.chat-message {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.chat-message.system {
+  background: rgba(255, 215, 0, 0.1);
+  border-left: 3px solid #ffd700;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 0.85em;
+}
+
+.sender-name {
+  color: #a29bfe;
+  font-weight: bold;
+}
+
+.message-time {
+  color: #888888;
+}
+
+.message-content {
+  color: #ffffff;
+  font-size: 0.95em;
+  line-height: 1.4;
+}
+
+.chat-input-area {
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.spectator-notice .notice-text {
+  font-size: 0.85em;
+  color: #a29bfe;
+  text-align: center;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.chat-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #ffffff;
+  font-size: 0.95em;
+}
+
+.chat-input:focus {
+  outline: none;
+  border-color: #a29bfe;
+  box-shadow: 0 0 0 2px rgba(162, 155, 254, 0.2);
+}
+
+.send-button {
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.send-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5f4fcf, #9085e8);
+  transform: translateY(-1px);
+}
+
+.send-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Animations */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 71, 87, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
+  }
+}
+
+@keyframes thinking {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .spectator-content {
+    grid-template-columns: 250px 1fr 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .spectator-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
+    gap: 16px;
+  }
+  
+  .spectator-header {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  
+  .left-panel,
+  .right-panel {
+    order: 2;
+  }
+  
+  .center-panel {
+    order: 1;
+    min-height: 400px;
+  }
+  
+  .spectator-chat {
+    max-height: 300px;
+  }
+}

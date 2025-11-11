@@ -18,6 +18,12 @@
 .env.test.local
 .env.production.local
 
+# database
+/data
+*.db
+*.sqlite
+*.sqlite3
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

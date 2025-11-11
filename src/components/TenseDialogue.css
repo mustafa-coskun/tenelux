@@ -1,0 +1,123 @@
+.tense-dialogue {
+  background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+  border-left: 4px solid #ff4444;
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 0 8px 8px 0;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 68, 68, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.tense-dialogue::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #ff4444, transparent);
+  animation: scanLine 3s ease-in-out infinite;
+}
+
+@keyframes scanLine {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translateX(-100%);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateX(100%);
+  }
+}
+
+.dialogue-main {
+  color: #ffffff;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.dialogue-quote {
+  color: #ff4444;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(255, 68, 68, 0.3);
+}
+
+.dialogue-atmospheric {
+  color: #888888;
+  font-size: 0.9rem;
+  font-style: italic;
+  opacity: 0.8;
+  border-top: 1px solid #333333;
+  padding-top: 10px;
+  animation: fadeInOut 4s ease-in-out infinite;
+}
+
+@keyframes fadeInOut {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .tense-dialogue {
+    padding: 15px;
+    margin: 15px 0;
+  }
+
+  .dialogue-main {
+    font-size: 1rem;
+  }
+
+  .dialogue-quote {
+    font-size: 1.3rem;
+  }
+
+  .dialogue-atmospheric {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tense-dialogue {
+    padding: 12px;
+    margin: 12px 0;
+    border-left-width: 3px;
+  }
+
+  .dialogue-main {
+    font-size: 0.95rem;
+  }
+
+  .dialogue-quote {
+    font-size: 1.2rem;
+  }
+
+  .dialogue-atmospheric {
+    font-size: 0.75rem;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .tense-dialogue::before,
+  .dialogue-atmospheric {
+    animation: none;
+  }
+
+  .dialogue-atmospheric {
+    opacity: 0.8;
+  }
+}

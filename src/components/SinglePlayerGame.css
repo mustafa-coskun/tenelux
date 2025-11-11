@@ -1,0 +1,655 @@
+.single-player-game {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--text-primary);
+}
+
+/* Strategy Selection Styles */
+.single-player-strategy {
+  padding: 2rem;
+}
+
+.strategy-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary {
+  background: var(--red);
+  color: var(--background);
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+}
+
+.btn-primary:hover {
+  background: #dc2626;
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 2px solid var(--border);
+}
+
+.btn-secondary:hover {
+  color: var(--text-primary);
+  border-color: var(--yellow);
+  box-shadow: 0 4px 15px rgba(234, 179, 8, 0.2);
+}
+
+/* Game Board Styles */
+.single-player-board {
+  padding: 1rem;
+}
+
+.game-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--surface);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.game-header h2 {
+  color: var(--red);
+  margin: 0 0 0.5rem 0;
+  font-size: 1.8rem;
+  text-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+}
+
+.opponent-info {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.ai-strategy {
+  color: var(--yellow);
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(234, 179, 8, 0.3);
+}
+
+.game-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+/* Game Ended Styles */
+.game-ended {
+  padding: 2rem;
+  text-align: center;
+}
+
+.game-ended h2 {
+  color: var(--red);
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  text-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
+}
+
+.end-game-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .single-player-game {
+    padding: 0;
+  }
+
+  .single-player-strategy {
+    padding: 1rem;
+  }
+
+  .strategy-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .btn {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .single-player-board {
+    padding: 0.5rem;
+  }
+
+  .game-header {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+  }
+
+  .game-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .end-game-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .game-ended {
+    padding: 1rem;
+  }
+
+  .game-ended h2 {
+    font-size: 2rem;
+  }
+}
+
+/* Character Reveal Screen */
+.character-reveal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  padding: 2rem;
+}
+
+.character-card {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #444;
+  border-radius: 15px;
+  padding: 3rem;
+  text-align: center;
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: cardAppear 0.8s ease-out;
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.character-avatar {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: avatarPulse 2s ease-in-out infinite;
+}
+
+@keyframes avatarPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.character-name {
+  color: #ff6b6b;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+}
+
+.character-description {
+  color: #ccc;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.character-personality {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-left: 3px solid #ff6b6b;
+}
+
+.character-personality strong {
+  color: #ff6b6b;
+}
+
+.character-dialogue {
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  font-style: italic;
+  color: #ffcccc;
+  position: relative;
+}
+
+.character-dialogue::before {
+  content: '"';
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  font-size: 3rem;
+  color: #ff6b6b;
+  opacity: 0.5;
+}
+
+.loading-indicator {
+  margin-top: 2rem;
+}
+
+.loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  background: #ff6b6b;
+  border-radius: 50%;
+  animation: dotPulse 1.4s ease-in-out infinite both;
+}
+
+.loading-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0s;
+}
+
+@keyframes dotPulse {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.loading-indicator p {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .character-card {
+    padding: 2rem;
+    margin: 1rem;
+  }
+
+  .character-name {
+    font-size: 1.5rem;
+  }
+
+  .character-description {
+    font-size: 1rem;
+  }
+
+  .character-avatar {
+    font-size: 3rem;
+  }
+}
+
+/* Decision Reversal Styles */
+.decision-reversal-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.reversal-card {
+  background: #1f1f1f;
+  border: 2px solid #ff4444;
+  border-radius: 12px;
+  padding: 40px;
+  max-width: 600px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(255, 68, 68, 0.3);
+}
+
+.reversal-card h2 {
+  color: #ff4444;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+.reversal-card p {
+  color: #cccccc;
+  margin-bottom: 30px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.reversal-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.reversal-btn {
+  padding: 15px 30px;
+  border: 2px solid;
+  border-radius: 8px;
+  background: transparent;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+.decline-btn {
+  border-color: #666666;
+  color: #cccccc;
+}
+
+.decline-btn:hover {
+  background: #666666;
+  color: white;
+}
+
+.accept-btn {
+  border-color: #ff4444;
+  color: #ff4444;
+}
+
+.accept-btn:hover {
+  background: #ff4444;
+  color: white;
+}
+
+.round-selection {
+  border-top: 1px solid #333333;
+  padding-top: 30px;
+}
+
+.round-selection h3 {
+  color: #ffaa00;
+  margin-bottom: 20px;
+}
+
+.rounds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: 15px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.round-btn {
+  padding: 15px;
+  border: 2px solid #ffaa00;
+  border-radius: 8px;
+  background: transparent;
+  color: #ffaa00;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.round-btn:hover {
+  background: #ffaa00;
+  color: #1f1f1f;
+}
+
+.decision-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.decision-btn {
+  padding: 20px 40px;
+  border: 2px solid;
+  border-radius: 8px;
+  background: transparent;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+.stay-silent-btn {
+  border-color: #00ff00;
+  color: #00ff00;
+}
+
+.stay-silent-btn:hover {
+  background: #00ff00;
+  color: #1f1f1f;
+}
+
+.confess-btn {
+  border-color: #ff4444;
+  color: #ff4444;
+}
+
+.confess-btn:hover {
+  background: #ff4444;
+  color: white;
+}
+
+
+/* ============================================
+   RESPONSIVE SINGLE PLAYER GAME STYLES
+   ============================================ */
+
+/* Mobile Styles (< 768px) */
+@media (max-width: 767px) {
+  .single-player-game.mobile {
+    padding: 10px;
+  }
+
+  .character-reveal {
+    padding: 20px 15px;
+  }
+
+  .character-reveal h2 {
+    font-size: 1.5rem;
+  }
+
+  .character-card {
+    padding: 20px 15px;
+  }
+
+  .character-icon {
+    font-size: 3rem;
+  }
+
+  .character-name {
+    font-size: 1.3rem;
+  }
+
+  .character-description {
+    font-size: 0.9rem;
+  }
+
+  .decision-reversal-screen {
+    padding: 15px;
+  }
+
+  .reversal-card {
+    padding: 20px 15px;
+  }
+
+  .reversal-card h2 {
+    font-size: 1.3rem;
+  }
+
+  .reversal-card p {
+    font-size: 0.9rem;
+  }
+
+  .reversal-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .reversal-buttons button {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .rounds-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .round-btn {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+
+  .single-player-board {
+    padding: 10px;
+  }
+
+  .game-header {
+    padding: 12px;
+    margin-bottom: 15px;
+  }
+
+  .game-header h2 {
+    font-size: 1.3rem;
+  }
+}
+
+/* Very small mobile (< 480px) */
+@media (max-width: 480px) {
+  .single-player-game.mobile {
+    padding: 8px;
+  }
+
+  .character-reveal {
+    padding: 16px 12px;
+  }
+
+  .character-reveal h2 {
+    font-size: 1.3rem;
+  }
+
+  .character-card {
+    padding: 16px 12px;
+  }
+
+  .character-icon {
+    font-size: 2.5rem;
+  }
+
+  .character-name {
+    font-size: 1.1rem;
+  }
+
+  .reversal-card {
+    padding: 16px 12px;
+  }
+
+  .reversal-card h2 {
+    font-size: 1.1rem;
+  }
+
+  .rounds-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .round-btn {
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Tablet Styles (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .single-player-game.tablet {
+    padding: 18px;
+  }
+
+  .character-reveal {
+    padding: 30px 25px;
+  }
+
+  .reversal-card {
+    padding: 30px 25px;
+  }
+
+  .rounds-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Desktop Styles (>= 1024px) */
+@media (min-width: 1024px) {
+  .single-player-game {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .character-reveal {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .reversal-card {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .rounds-grid {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Hover effects for desktop */
+  .round-btn:hover {
+    transform: translateY(-3px);
+  }
+}

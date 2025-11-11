@@ -1,0 +1,138 @@
+/* Rematch Request Modal Styles */
+.rematch-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.rematch-modal {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border: 2px solid #444;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.rematch-modal-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.rematch-modal-header h3 {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.rematch-modal-content {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.rematch-message {
+  color: #ccc;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.rematch-modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.rematch-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rematch-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.rematch-btn:active {
+  transform: translateY(0);
+}
+
+.accept-btn {
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  color: white;
+}
+
+.accept-btn:hover {
+  background: linear-gradient(135deg, #5ed5cc 0%, #4fb3a0 100%);
+  box-shadow: 0 4px 12px rgba(78, 205, 196, 0.4);
+}
+
+.decline-btn {
+  background: linear-gradient(135deg, #ff5252 0%, #d32f2f 100%);
+  color: white;
+}
+
+.decline-btn:hover {
+  background: linear-gradient(135deg, #ff6b6b 0%, #e53935 100%);
+  box-shadow: 0 4px 12px rgba(255, 82, 82, 0.4);
+}
+
+/* Dark theme integration */
+.rematch-modal {
+  border-color: #555;
+}
+
+.rematch-modal-header h3 {
+  color: #f5f5f5;
+}
+
+.rematch-message {
+  color: #d0d0d0;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .rematch-modal {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+
+  .rematch-modal-actions {
+    flex-direction: column;
+  }
+
+  .rematch-btn {
+    width: 100%;
+  }
+}

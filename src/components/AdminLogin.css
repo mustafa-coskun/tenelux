@@ -1,0 +1,281 @@
+.admin-login-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.admin-login-modal {
+  background: #1a1a1a;
+  border-radius: 12px;
+  border: 2px solid #dc3545;
+  max-width: 500px;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(220, 53, 69, 0.3);
+}
+
+.admin-login-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: #dc3545;
+  color: white;
+}
+
+.admin-login-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.admin-login-form {
+  padding: 30px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  color: #fff;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #333;
+  border-radius: 6px;
+  background: #2a2a2a;
+  color: #fff;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #dc3545;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.form-group input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background: #dc3545;
+  color: white;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.login-button {
+  flex: 1;
+  padding: 12px 24px;
+  background: #dc3545;
+  border: 2px solid #dc3545;
+  color: white;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.login-button:hover:not(:disabled) {
+  background: #c82333;
+  border-color: #c82333;
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  flex: 1;
+  padding: 12px 24px;
+  background: transparent;
+  border: 2px solid #666;
+  color: #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-button:hover:not(:disabled) {
+  border-color: #888;
+  color: #fff;
+}
+
+.demo-section {
+  border-top: 1px solid #333;
+  padding: 20px 30px;
+  background: #222;
+}
+
+.demo-toggle {
+  width: 100%;
+  padding: 10px;
+  background: #333;
+  border: 1px solid #555;
+  color: #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.demo-toggle:hover {
+  background: #444;
+  color: #fff;
+}
+
+.demo-credentials {
+  margin-top: 15px;
+}
+
+.demo-credentials h4 {
+  color: #fff;
+  margin-bottom: 15px;
+  font-size: 1rem;
+}
+
+.demo-account {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 15px;
+  background: #2a2a2a;
+  border-radius: 6px;
+  border: 1px solid #444;
+}
+
+.demo-info {
+  flex: 1;
+  color: #ccc;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.demo-info strong {
+  color: #fff;
+}
+
+.demo-info small {
+  color: #999;
+  font-style: italic;
+}
+
+.demo-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: all 0.2s;
+  margin-left: 15px;
+}
+
+.demo-button.admin {
+  background: #28a745;
+  color: white;
+}
+
+.demo-button.admin:hover {
+  background: #218838;
+}
+
+.demo-button.moderator {
+  background: #ffc107;
+  color: #212529;
+}
+
+.demo-button.moderator:hover {
+  background: #e0a800;
+}
+
+.demo-warning {
+  margin-top: 15px;
+  padding: 10px;
+  background: #856404;
+  color: #fff3cd;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.security-notice {
+  padding: 15px 30px;
+  background: #333;
+  text-align: center;
+  color: #999;
+  border-top: 1px solid #444;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  .admin-login-overlay {
+    padding: 10px;
+  }
+  
+  .admin-login-form {
+    padding: 20px;
+  }
+  
+  .demo-section {
+    padding: 15px 20px;
+  }
+  
+  .demo-account {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .demo-button {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,745 @@
+.multiplayer-game-board {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.game-header {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1.5rem 2rem;
+  border-bottom: 2px solid rgba(255, 107, 107, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.opponent-info h2 {
+  color: #ff6b6b;
+  font-size: 1.8rem;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+}
+
+.opponent-trust {
+  color: #7bed9f;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.phase-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  min-width: 200px;
+}
+
+.phase-name {
+  font-size: 1.1rem;
+  color: #ff6b6b;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.phase-timer {
+  font-size: 1.5rem;
+  color: #fff;
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
+.game-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.stats-button,
+.quit-button {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  font-family: 'Courier New', monospace;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stats-button {
+  background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+  color: white;
+  box-shadow: 0 3px 10px rgba(45, 52, 54, 0.3);
+}
+
+.stats-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(45, 52, 54, 0.4);
+}
+
+.quit-button {
+  background: linear-gradient(135deg, #d63031 0%, #e17055 100%);
+  color: white;
+  box-shadow: 0 3px 10px rgba(214, 48, 49, 0.3);
+}
+
+.quit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(214, 48, 49, 0.4);
+}
+
+.game-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+.game-status {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.game-status h2,
+.game-status h3 {
+  color: #ff6b6b;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 5px rgba(255, 107, 107, 0.3);
+}
+
+.current-scores,
+.final-scores {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin: 1.5rem 0;
+}
+
+.score-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.player-name {
+  font-size: 1.2rem;
+  color: #fff;
+  font-weight: bold;
+}
+
+.score {
+  font-size: 2rem;
+  color: #7bed9f;
+  font-weight: bold;
+}
+
+.winner {
+  font-size: 1.5rem;
+  color: #ffa502;
+  font-weight: bold;
+  margin: 1rem 0;
+  text-shadow: 0 0 10px rgba(255, 165, 2, 0.3);
+}
+
+.game-over-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.end-game-button {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-family: 'Courier New', monospace;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.end-game-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.game-status.waiting {
+  background: rgba(255, 165, 2, 0.1);
+  border-color: rgba(255, 165, 2, 0.3);
+}
+
+.game-status.waiting h3 {
+  color: #ffa502;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 165, 2, 0.3);
+  border-top: 3px solid #ffa502;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 1rem auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.communication-phase {
+  margin: 2rem 0;
+}
+
+.round-history {
+  background: rgba(0, 0, 0, 0.3);
+  border-top: 2px solid rgba(255, 107, 107, 0.3);
+  padding: 1.5rem 2rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.round-history h3 {
+  color: #ff6b6b;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem;
+  background: rgba(255, 107, 107, 0.05);
+  border: 1px solid rgba(255, 107, 107, 0.1);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.history-item:hover {
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.round-number {
+  font-weight: bold;
+  color: #ff6b6b;
+  min-width: 30px;
+}
+
+.decisions {
+  display: flex;
+  gap: 2rem;
+  flex: 1;
+}
+
+.decision {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex: 1;
+}
+
+.decision .player {
+  font-size: 0.9rem;
+  color: #b0b0b0;
+  min-width: 80px;
+}
+
+.choice {
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  min-width: 70px;
+  text-align: center;
+}
+
+.choice.confess {
+  background: rgba(214, 48, 49, 0.2);
+  color: #d63031;
+  border: 1px solid rgba(214, 48, 49, 0.3);
+}
+
+.choice.stay_silent {
+  background: rgba(123, 237, 159, 0.2);
+  color: #7bed9f;
+  border: 1px solid rgba(123, 237, 159, 0.3);
+}
+
+.points {
+  color: #7bed9f;
+  font-weight: bold;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN - FIT EVERYTHING ON SCREEN
+   ============================================ */
+
+/* Tablet and below */
+@media (max-width: 1024px) {
+  .multiplayer-game-board {
+    min-height: 100vh;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .game-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1.2rem 1.5rem;
+  }
+
+  .opponent-info h2 {
+    font-size: 1.5rem;
+  }
+
+  .phase-indicator {
+    align-self: center;
+    min-width: 180px;
+  }
+
+  .game-content {
+    padding: 1.5rem;
+  }
+
+  .current-scores,
+  .final-scores {
+    gap: 2rem;
+  }
+
+  .round-history {
+    max-height: 180px;
+  }
+}
+
+/* Mobile - Compact everything */
+@media (max-width: 768px) {
+  .multiplayer-game-board {
+    min-height: 100vh;
+    height: 100vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .game-header {
+    padding: 1rem;
+    gap: 0.8rem;
+  }
+
+  .opponent-info h2 {
+    font-size: 1.3rem;
+  }
+
+  .opponent-trust {
+    font-size: 0.85rem;
+  }
+
+  .phase-indicator {
+    padding: 0.8rem;
+    min-width: 150px;
+  }
+
+  .phase-name {
+    font-size: 0.95rem;
+  }
+
+  .phase-timer {
+    font-size: 1.2rem;
+  }
+
+  .game-actions {
+    flex-direction: row;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .stats-button,
+  .quit-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .game-content {
+    padding: 1rem;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .game-status {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .game-status h2 {
+    font-size: 1.3rem;
+  }
+
+  .game-status h3 {
+    font-size: 1.1rem;
+  }
+
+  .current-scores,
+  .final-scores {
+    flex-direction: row;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .score-item {
+    min-width: 100px;
+  }
+
+  .player-name {
+    font-size: 1rem;
+  }
+
+  .score {
+    font-size: 1.5rem;
+  }
+
+  .winner {
+    font-size: 1.2rem;
+  }
+
+  .round-history {
+    padding: 1rem;
+    max-height: 150px;
+    overflow-y: auto;
+  }
+
+  .round-history h3 {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .history-list {
+    gap: 0.4rem;
+  }
+
+  .history-item {
+    padding: 0.6rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .round-number {
+    font-size: 0.85rem;
+  }
+
+  .decisions {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .decision {
+    gap: 0.5rem;
+  }
+
+  .decision .player {
+    font-size: 0.8rem;
+    min-width: 60px;
+  }
+
+  .choice {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    min-width: 60px;
+  }
+
+  .points {
+    font-size: 0.85rem;
+    min-width: 30px;
+  }
+
+  .game-over-actions {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .end-game-button {
+    padding: 0.8rem 1.5rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* Very small mobile */
+@media (max-width: 480px) {
+  .multiplayer-game-board {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .game-header {
+    padding: 0.8rem;
+  }
+
+  .opponent-info h2 {
+    font-size: 1.1rem;
+  }
+
+  .opponent-trust {
+    font-size: 0.75rem;
+  }
+
+  .phase-indicator {
+    padding: 0.6rem;
+    min-width: 130px;
+    width: 100%;
+  }
+
+  .phase-name {
+    font-size: 0.85rem;
+  }
+
+  .phase-timer {
+    font-size: 1rem;
+  }
+
+  .game-actions {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .stats-button,
+  .quit-button {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.75rem;
+    width: 100%;
+  }
+
+  .game-content {
+    padding: 0.8rem;
+  }
+
+  .game-status {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .game-status h2 {
+    font-size: 1.1rem;
+  }
+
+  .game-status h3 {
+    font-size: 0.95rem;
+  }
+
+  .current-scores,
+  .final-scores {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .score-item {
+    min-width: 80px;
+  }
+
+  .player-name {
+    font-size: 0.9rem;
+  }
+
+  .score {
+    font-size: 1.3rem;
+  }
+
+  .winner {
+    font-size: 1rem;
+  }
+
+  .round-history {
+    padding: 0.8rem;
+    max-height: 120px;
+  }
+
+  .round-history h3 {
+    font-size: 0.9rem;
+  }
+
+  .history-item {
+    padding: 0.5rem;
+  }
+
+  .round-number {
+    font-size: 0.75rem;
+  }
+
+  .decision .player {
+    font-size: 0.7rem;
+    min-width: 50px;
+  }
+
+  .choice {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+    min-width: 50px;
+  }
+
+  .points {
+    font-size: 0.75rem;
+  }
+
+  .end-game-button {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+  .multiplayer-game-board {
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .game-header {
+    padding: 0.6rem 1rem;
+  }
+
+  .opponent-info h2 {
+    font-size: 1rem;
+  }
+
+  .phase-indicator {
+    padding: 0.5rem;
+  }
+
+  .game-content {
+    padding: 0.8rem;
+  }
+
+  .game-status {
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .current-scores,
+  .final-scores {
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .round-history {
+    max-height: 100px;
+  }
+}
+.multiplayer-game-actions {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.leave-game-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.leave-game-btn:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+}
+/* Connection Error Banner */
+.connection-error-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #ff5252 0%, #d32f2f 100%);
+  color: white;
+  padding: 12px 20px;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.error-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.error-icon {
+  font-size: 1.2em;
+}
+
+.error-text {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Adjust main content when error banner is shown */
+.multiplayer-game-board:has(.connection-error-banner) .game-board {
+  margin-top: 60px;
+}
+
+@media (max-width: 768px) {
+  .connection-error-banner {
+    padding: 10px 15px;
+  }
+  
+  .error-text {
+    font-size: 0.9rem;
+  }
+}

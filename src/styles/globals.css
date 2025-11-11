@@ -1,0 +1,906 @@
+/* Global styles for Tenelux game - Interrogation Room Theme */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0d0d0d 100%);
+  background-attachment: fixed;
+  color: #ffffff;
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Interrogation room concrete texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(circle at 20% 80%,
+      rgba(120, 119, 198, 0.02) 0%,
+      transparent 50%),
+    radial-gradient(circle at 80% 20%,
+      rgba(255, 68, 68, 0.02) 0%,
+      transparent 50%),
+    repeating-linear-gradient(45deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.005) 2px,
+      rgba(255, 255, 255, 0.005) 4px);
+  pointer-events: none;
+  z-index: -2;
+}
+
+/* Subtle concrete wall texture */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    repeating-linear-gradient(0deg,
+      rgba(255, 255, 255, 0.01) 0px,
+      transparent 1px,
+      transparent 20px,
+      rgba(255, 255, 255, 0.01) 21px),
+    repeating-linear-gradient(90deg,
+      rgba(255, 255, 255, 0.01) 0px,
+      transparent 1px,
+      transparent 20px,
+      rgba(255, 255, 255, 0.01) 21px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Interrogation room button styles */
+button {
+  background: linear-gradient(145deg, #2d2d2d, #1a1a1a);
+  color: #ffffff;
+  border: 2px solid #333333;
+  padding: 12px 24px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg,
+      transparent 49%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 51%);
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+button:hover {
+  background: linear-gradient(145deg, #3d3d3d, #2a2a2a);
+  border-color: #555555;
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+button:hover::before {
+  opacity: 1;
+}
+
+button:active {
+  background: linear-gradient(145deg, #1d1d1d, #0a0a0a);
+  transform: translateY(0);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+button:disabled:hover {
+  background: linear-gradient(145deg, #2d2d2d, #1a1a1a);
+  border-color: #333333;
+}
+
+/* Interrogation room input styles */
+input,
+textarea {
+  background: linear-gradient(145deg, #1f1f1f, #0f0f0f);
+  color: #ffffff;
+  border: 2px solid #333333;
+  padding: 12px 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #ff4444;
+  background: linear-gradient(145deg, #2f1f1f, #1f0f0f);
+  box-shadow:
+    0 0 0 3px rgba(255, 68, 68, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 10px rgba(255, 68, 68, 0.1);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #666666;
+  font-style: italic;
+}
+
+/* Utility classes */
+.text-center {
+  text-align: center;
+}
+
+.text-red {
+  color: #ff4444;
+  text-shadow: 0 0 5px rgba(255, 68, 68, 0.3);
+}
+
+.text-green {
+  color: #00ff00;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+}
+
+.text-yellow {
+  color: #ffaa00;
+  text-shadow: 0 0 5px rgba(255, 170, 0, 0.3);
+}
+
+.text-white {
+  color: #ffffff;
+}
+
+.text-gray {
+  color: #cccccc;
+}
+
+.text-dark-gray {
+  color: #666666;
+}
+
+/* Interrogation room specific text styles */
+.text-warning {
+  color: #ff6b35;
+  text-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
+  font-weight: bold;
+}
+
+.text-danger {
+  color: #ff1744;
+  text-shadow: 0 0 10px rgba(255, 23, 68, 0.5);
+  font-weight: bold;
+}
+
+.text-success {
+  color: #00e676;
+  text-shadow: 0 0 8px rgba(0, 230, 118, 0.4);
+  font-weight: bold;
+}
+
+.text-muted {
+  color: #888888;
+  opacity: 0.8;
+}
+
+.text-emphasis {
+  color: #ffffff;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+  font-weight: bold;
+}
+
+/* Tense dialogue styles */
+.dialogue-text {
+  font-style: italic;
+  color: #cccccc;
+  border-left: 3px solid #ff4444;
+  padding-left: 15px;
+  margin: 10px 0;
+  background: rgba(255, 68, 68, 0.05);
+  padding: 10px 15px;
+  border-radius: 0 4px 4px 0;
+}
+
+.interrogation-prompt {
+  color: #ff4444;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+}
+
+.mb-1 {
+  margin-bottom: 8px;
+}
+
+.mb-2 {
+  margin-bottom: 16px;
+}
+
+.mb-3 {
+  margin-bottom: 24px;
+}
+
+.mb-4 {
+  margin-bottom: 32px;
+}
+
+.mt-1 {
+  margin-top: 8px;
+}
+
+.mt-2 {
+  margin-top: 16px;
+}
+
+.mt-3 {
+  margin-top: 24px;
+}
+
+.mt-4 {
+  margin-top: 32px;
+}
+
+.p-1 {
+  padding: 8px;
+}
+
+.p-2 {
+  padding: 16px;
+}
+
+.p-3 {
+  padding: 24px;
+}
+
+.p-4 {
+  padding: 32px;
+}
+
+/* Interrogation room panel styles */
+.interrogation-panel {
+  background: linear-gradient(145deg, #1f1f1f, #0f0f0f);
+  border: 2px solid #333333;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 10px 0;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.interrogation-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 68, 68, 0.3),
+      transparent);
+}
+
+.interrogation-panel-header {
+  color: #ff4444;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #333333;
+}
+
+.interrogation-panel-content {
+  color: #cccccc;
+  line-height: 1.6;
+}
+
+/* Card-like containers */
+.evidence-card {
+  background: linear-gradient(145deg, #2d2d2d, #1a1a1a);
+  border: 1px solid #444444;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 10px 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.evidence-card:hover {
+  border-color: #555555;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+  transform: translateY(-1px);
+}
+
+.evidence-card-title {
+  color: #ffffff;
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.evidence-card-content {
+  color: #cccccc;
+  font-size: 0.9rem;
+}
+
+/* Status indicators */
+.status-indicator {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.status-active {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  border: 1px solid #00ff00;
+}
+
+.status-waiting {
+  background: rgba(255, 170, 0, 0.2);
+  color: #ffaa00;
+  border: 1px solid #ffaa00;
+}
+
+.status-danger {
+  background: rgba(255, 68, 68, 0.2);
+  color: #ff4444;
+  border: 1px solid #ff4444;
+}
+
+.status-inactive {
+  background: rgba(102, 102, 102, 0.2);
+  color: #666666;
+  border: 1px solid #666666;
+}
+
+/* Loading and transition effects */
+.loading-dots::after {
+  content: '';
+  animation: loadingDots 1.5s infinite;
+}
+
+@keyframes loadingDots {
+
+  0%,
+  20% {
+    content: '';
+  }
+
+  40% {
+    content: '.';
+  }
+
+  60% {
+    content: '..';
+  }
+
+  80%,
+  100% {
+    content: '...';
+  }
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1200px) {
+  .interrogation-panel {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  .interrogation-panel {
+    padding: 12px;
+    margin: 8px 0;
+  }
+
+  .evidence-card {
+    padding: 12px;
+    margin: 8px 0;
+  }
+
+  button {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+
+  input,
+  textarea {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 13px;
+  }
+
+  .interrogation-panel {
+    padding: 10px;
+    margin: 6px 0;
+    border-radius: 6px;
+  }
+
+  .evidence-card {
+    padding: 10px;
+    margin: 6px 0;
+  }
+
+  button {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  input,
+  textarea {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .status-indicator {
+    padding: 3px 6px;
+    font-size: 0.7rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  body {
+    background: #000000;
+    color: #ffffff;
+  }
+
+  button {
+    border-width: 3px;
+  }
+
+  .interrogation-panel {
+    border-width: 3px;
+  }
+
+  input,
+  textarea {
+    border-width: 3px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .loading-dots::after {
+    animation: none;
+    content: '...';
+  }
+}
+
+/* Dark mode specific enhancements */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .interrogation-panel {
+    border: 2px solid black;
+    background: white;
+  }
+
+  button {
+    border: 2px solid black;
+    background: white;
+    color: black;
+  }
+}
+
+/* Asset and Design System Variables */
+:root {
+  /* Logo and Branding */
+  --brand-name: 'Tenelux';
+
+  /* Tenelux Gold Colors */
+  --gold-top: #E1B954;
+  --gold-mid: #C89E3D;
+  --gold-shadow: #8C6420;
+  --bg-dark: #0c0505;
+  --bg-red: #300606;
+  --glow-white: rgba(255, 245, 220, 0.9);
+  --glow-red: rgba(220, 20, 20, 0.14);
+
+  /* Dynamic Backgrounds */
+  --bg-auth: linear-gradient(135deg, rgba(26, 26, 46, 0.85) 0%, rgba(22, 33, 62, 0.9) 50%, rgba(15, 52, 96, 0.85) 100%);
+  --bg-menu: linear-gradient(135deg, rgba(10, 10, 10, 0.8) 0%, rgba(26, 26, 26, 0.85) 50%, rgba(13, 13, 13, 0.8) 100%);
+  --bg-menu-image: none;
+  --bg-game: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0d0d0d 100%);
+  --bg-game-image: none;
+
+  /* Spacing System */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 50%;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.1);
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
+  /* Z-Index Scale */
+  --z-background: -10;
+  --z-base: 0;
+  --z-elevated: 10;
+  --z-overlay: 100;
+  --z-modal: 1000;
+  --z-tooltip: 10000;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 480px) {
+  :root {
+    --space-xs: 0.2rem;
+    --space-sm: 0.4rem;
+    --space-md: 0.8rem;
+    --space-lg: 1.2rem;
+    --space-xl: 1.6rem;
+    --space-2xl: 2.4rem;
+    --space-3xl: 3.2rem;
+  }
+}
+
+/* Logo Utility Classes */
+.logo-primary {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.logo-large {
+  width: 80px;
+  height: 80px;
+}
+
+.logo-small {
+  width: 24px;
+  height: 24px;
+}
+
+/* Glow Effects */
+.glow-red {
+  filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5));
+}
+
+.glow-blue {
+  filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.5));
+}
+
+.glow-yellow {
+  filter: drop-shadow(0 0 10px rgba(255, 193, 7, 0.5));
+}
+
+.glow-white {
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}
+
+/* Animation Utilities */
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+
+  50% {
+    transform: none;
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus Styles */
+*:focus {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Selection Styles */
+::selection {
+  background-color: rgba(102, 126, 234, 0.3);
+  color: white;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Print Styles */
+@media print {
+
+  .background-effects,
+  .loading-spinner,
+  .auth-screen,
+  .main-menu {
+    background: white !important;
+    color: black !important;
+  }
+
+  .logo-primary,
+  .game-logo,
+  .main-logo,
+  .spinner-logo {
+    filter: none !important;
+  }
+}
+
+/* Tenelux
+ Title Styles */
+.tenelux-title {
+  font-family: "Cinzel", "Trajan Pro", serif;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 0.9;
+  margin: 0;
+  position: relative;
+  display: inline-block;
+
+  /* Gold gradient as text fill */
+  background: linear-gradient(180deg,
+      var(--gold-top) 0%,
+      var(--gold-mid) 45%,
+      var(--gold-shadow) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  /* Thin dark stroke for readability */
+  /* -webkit-text-stroke: 0.9px rgba(0, 0, 0, 0.7); */
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.6),
+    0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* Metallic shine effect */
+.tenelux-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -6%;
+  height: 28%;
+  pointer-events: none;
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.55),
+      rgba(255, 255, 255, 0.12) 10%,
+      rgba(255, 255, 255, 0.02) 40%,
+      transparent 60%);
+  mix-blend-mode: overlay;
+  filter: blur(8px);
+  transform: rotate(-2deg);
+}
+
+/* Aging texture overlay */
+.tenelux-title::before {
+  content: "";
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  top: -2%;
+  bottom: -2%;
+  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.06));
+  mix-blend-mode: multiply;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* Subtitle styles */
+.tenelux-subtitle {
+  font-family: "Cinzel", "Trajan Pro", serif;
+  letter-spacing: 0.12em;
+  color: rgba(230, 200, 110, 0.95);
+  text-transform: uppercase;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  margin: 0;
+}
+
+/* Size variants */
+.tenelux-title.size-large {
+  font-size: clamp(36px, 8vw, 120px);
+}
+
+.tenelux-title.size-medium {
+  font-size: clamp(24px, 6vw, 80px);
+}
+
+.tenelux-title.size-small {
+  font-size: clamp(18px, 4vw, 48px);
+}
+
+.tenelux-subtitle.size-large {
+  font-size: clamp(12px, 1.8vw, 20px);
+}
+
+.tenelux-subtitle.size-medium {
+  font-size: clamp(10px, 1.4vw, 16px);
+}
+
+.tenelux-subtitle.size-small {
+  font-size: clamp(8px, 1vw, 12px);
+}
+
+/* Mobile optimizations */
+@media (max-width: 520px) {
+  .tenelux-title::after {
+    display: none;
+    /* Performance optimization */
+  }
+}

@@ -1,0 +1,402 @@
+.tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.tutorial-modal {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tutorial-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tutorial-header h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.tutorial-progress {
+  padding: 24px 32px 16px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #45a049);
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+.step-indicators {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.step-indicator {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-indicator:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.step-indicator.active {
+  border-color: #4CAF50;
+  background: #4CAF50;
+  color: #ffffff;
+}
+
+.step-indicator.completed {
+  border-color: #4CAF50;
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+}
+
+.tutorial-content {
+  padding: 32px;
+  min-height: 300px;
+}
+
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.step-header h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.step-counter {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.step-body {
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+}
+
+.step-description {
+  font-size: 18px;
+  margin-bottom: 24px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.step-tips {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  border-left: 4px solid #4CAF50;
+}
+
+.step-tips h4 {
+  margin: 0 0 16px 0;
+  color: #4CAF50;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.step-tips ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.step-tips li {
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.step-tips li:last-child {
+  margin-bottom: 0;
+}
+
+.tutorial-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.nav-left,
+.nav-right {
+  flex: 1;
+}
+
+.nav-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.nav-center {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-button {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.nav-button.primary {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: #ffffff;
+}
+
+.nav-button.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #45a049, #3d8b40);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.nav-button.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.nav-button.secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.quick-action-button {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.quick-action-button.create {
+  background: linear-gradient(135deg, #FF6B35, #F7931E);
+  color: #ffffff;
+}
+
+.quick-action-button.create:hover {
+  background: linear-gradient(135deg, #F7931E, #FF6B35);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.quick-action-button.join {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #ffffff;
+}
+
+.quick-action-button.join:hover {
+  background: linear-gradient(135deg, #764ba2, #667eea);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.tutorial-footer {
+  padding: 16px 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.help-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.help-link {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.help-link:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.separator {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tutorial-modal {
+    width: 95%;
+    margin: 20px;
+  }
+
+  .tutorial-header,
+  .tutorial-progress,
+  .tutorial-content,
+  .tutorial-navigation,
+  .tutorial-footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .tutorial-content {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    min-height: 250px;
+  }
+
+  .step-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .step-header h3 {
+    font-size: 24px;
+  }
+
+  .step-description {
+    font-size: 16px;
+  }
+
+  .tutorial-navigation {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .nav-left,
+  .nav-center,
+  .nav-right {
+    flex: none;
+    width: 100%;
+  }
+
+  .nav-right {
+    justify-content: center;
+  }
+
+  .quick-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .quick-action-button {
+    width: 100%;
+  }
+
+  .step-indicators {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .step-indicator {
+    width: 35px;
+    height: 35px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tutorial-header h2 {
+    font-size: 20px;
+  }
+
+  .step-header h3 {
+    font-size: 20px;
+  }
+
+  .step-description {
+    font-size: 14px;
+  }
+
+  .nav-button,
+  .quick-action-button {
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+}

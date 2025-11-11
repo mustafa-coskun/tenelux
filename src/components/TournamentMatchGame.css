@@ -1,0 +1,674 @@
+/* Tournament Match Game - GameBoard Style */
+.tournament-match-game {
+  width: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+  color: #ffffff;
+  font-family: 'Courier New', monospace;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tournament-match-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 2rem;
+  overflow: hidden;
+}
+
+.tournament-match-loading h2 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: #ff6b6b;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+  font-weight: 300;
+  letter-spacing: 2px;
+}
+
+.tournament-match-loading p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  color: #b0b0b0;
+  line-height: 1.6;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(255, 107, 107, 0.3);
+  border-top: 3px solid #ff6b6b;
+  border-radius: 50%;
+  animation: tournamentSpin 1s linear infinite;
+  margin: 2rem auto;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes tournamentSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Tournament Match Header */
+.tournament-match-header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px solid #ffd700;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.tournament-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.tournament-info h3 {
+  color: #ffd700;
+  margin: 0;
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+.elimination-badge {
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+  animation: pulse 2s infinite;
+}
+
+.match-players {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  font-size: 1.2em;
+}
+
+.match-players .player-name {
+  color: #00d4ff;
+  font-weight: bold;
+  padding: 8px 16px;
+  background: rgba(0, 212, 255, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.match-players .vs-text {
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+  }
+  50% {
+    box-shadow: 0 2px 20px rgba(255, 71, 87, 0.8);
+  }
+  100% {
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+  }
+}
+
+/* Tournament Match Statistics */
+.tournament-match-statistics {
+  width: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+  overflow: hidden;
+}
+
+.tournament-continue {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.continue-tournament-btn {
+  background: linear-gradient(135deg, #00d2d3 0%, #54a0ff 100%);
+  color: white;
+  border: none;
+  padding: 1.2rem 2.5rem;
+  font-size: 1.2rem;
+  font-family: 'Courier New', monospace;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(0, 210, 211, 0.3);
+}
+
+.continue-tournament-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 210, 211, 0.4);
+  background: linear-gradient(135deg, #54a0ff 0%, #00d2d3 100%);
+}
+
+.continue-tournament-btn:active {
+  transform: translateY(0);
+}
+
+/* Tournament Match Actions */
+.tournament-match-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.forfeit-btn {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-family: 'Courier New', monospace;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.forfeit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+  background: linear-gradient(135deg, #ee5a52 0%, #ff6b6b 100%);
+}
+
+.forfeit-btn:active {
+  transform: translateY(0);
+}
+
+/* Decision Reversal Screens - GameBoard Style */
+.decision-reversal-screen {
+  width: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+  padding: 20px;
+  overflow: hidden;
+}
+
+.reversal-card {
+  background: rgba(30, 30, 30, 0.95);
+  border: 2px solid rgba(255, 107, 107, 0.3);
+  border-radius: 16px;
+  padding: 2.5rem;
+  max-width: 600px;
+  width: 90%;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reversal-card h2 {
+  color: #ff6b6b;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+}
+
+.reversal-card p {
+  color: #e0e0e0;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.reversal-note {
+  color: #ff9800;
+  font-weight: 600;
+  font-size: 1em !important;
+}
+
+.reversal-timer {
+  background: rgba(255, 193, 7, 0.1);
+  border: 2px solid rgba(255, 193, 7, 0.3);
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+  animation: pulse-warning 2s ease-in-out infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    border-color: rgba(255, 193, 7, 0.3);
+    background: rgba(255, 193, 7, 0.1);
+  }
+  50% {
+    border-color: rgba(255, 193, 7, 0.5);
+    background: rgba(255, 193, 7, 0.15);
+  }
+}
+
+.reversal-timer p {
+  color: #ff9800;
+  font-weight: bold;
+  font-size: 1.2em;
+  margin: 0;
+}
+
+.reversal-buttons {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.reversal-btn {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.reversal-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.decline-btn {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: 2px solid rgba(255, 107, 107, 0.5);
+}
+
+.decline-btn:hover:not(:disabled) {
+  background: rgba(255, 107, 107, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.accept-btn {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 2px solid rgba(76, 175, 80, 0.5);
+}
+
+.accept-btn:hover:not(:disabled) {
+  background: rgba(76, 175, 80, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.waiting-for-opponent {
+  text-align: center;
+  padding: 20px;
+}
+
+.waiting-for-opponent p {
+  color: #b0b0b0;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+/* Round Selection Grid */
+.rounds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.round-btn {
+  background: rgba(30, 30, 30, 0.8);
+  border: 2px solid rgba(255, 107, 107, 0.3);
+  border-radius: 10px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.round-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+  border-color: #ff6b6b;
+}
+
+.round-number {
+  font-weight: bold;
+  color: #ff6b6b;
+  font-size: 1.1em;
+  margin-bottom: 10px;
+}
+
+.round-decisions {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.9em;
+}
+
+.round-decisions .decision {
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.round-decisions .decision.cooperate {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+}
+
+.round-decisions .decision.betray {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+}
+
+.round-decisions .vs {
+  font-size: 0.8em;
+  color: #999;
+  text-align: center;
+}
+
+/* Decision Selection */
+.current-decision {
+  background: rgba(255, 107, 107, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  font-weight: 600;
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.decision-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.decision-btn {
+  flex: 1;
+  padding: 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Courier New', monospace;
+}
+
+.decision-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stay-silent-btn {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 2px solid rgba(76, 175, 80, 0.5);
+}
+
+.stay-silent-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+  background: rgba(76, 175, 80, 0.3);
+}
+
+.confess-btn {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+  border: 2px solid rgba(244, 67, 54, 0.5);
+}
+
+.confess-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+  background: rgba(244, 67, 54, 0.3);
+}
+
+.btn-subtitle {
+  font-size: 0.8em;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+/* Reversal Messages */
+.reversal-rejection-message {
+  margin-bottom: 2rem;
+}
+
+.rejection-alert {
+  background: rgba(255, 107, 107, 0.1);
+  border: 2px solid rgba(255, 107, 107, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: slideInDown 0.5s ease-out;
+}
+
+.rejection-icon {
+  font-size: 2rem;
+  color: #ff6b6b;
+}
+
+.rejection-alert p {
+  margin: 0;
+  color: #ff6b6b;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.reversal-selection-message {
+  background: rgba(76, 175, 80, 0.1);
+  border: 2px solid rgba(76, 175, 80, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  animation: slideInDown 0.5s ease-out;
+}
+
+.reversal-selection-message p {
+  margin: 0;
+  color: #4caf50;
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tournament-match-game {
+    padding: 10px;
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .tournament-match-loading h2 {
+    font-size: 1.8rem;
+  }
+
+  .tournament-match-loading p {
+    font-size: 1rem;
+  }
+
+  .tournament-match-header {
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+
+  .tournament-info h3 {
+    font-size: 1.2em;
+  }
+
+  .match-players {
+    flex-direction: column;
+    gap: 12px;
+    font-size: 1.1em;
+  }
+
+  .match-players .vs-text {
+    font-size: 1em;
+  }
+
+  .reversal-card {
+    padding: 20px 15px;
+  }
+
+  .reversal-card h2 {
+    font-size: 1.5em;
+  }
+
+  .reversal-card p {
+    font-size: 1em;
+  }
+
+  .reversal-buttons,
+  .decision-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .reversal-btn,
+  .decision-btn {
+    width: 100%;
+  }
+
+  .rounds-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tournament-match-actions {
+    flex-direction: column;
+    padding: 15px;
+  }
+
+  .forfeit-btn,
+  .continue-tournament-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .tournament-match-loading h2 {
+    font-size: 1.5rem;
+  }
+
+  .reversal-card {
+    padding: 16px 12px;
+  }
+
+  .reversal-card h2 {
+    font-size: 1.3rem;
+  }
+
+  .decision-btn {
+    padding: 15px;
+    font-size: 1em;
+  }
+}
+
+/* Tablet Styles */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .tournament-match-game {
+    padding: 18px;
+  }
+
+  .reversal-card {
+    padding: 30px 25px;
+  }
+
+  .rounds-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Desktop Styles */
+@media (min-width: 1024px) {
+  .tournament-match-game {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .reversal-card {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .rounds-grid {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .round-btn:hover {
+    transform: translateY(-3px);
+  }
+}

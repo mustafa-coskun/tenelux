@@ -1,0 +1,243 @@
+/* ============================================
+   RESPONSIVE DIALOG COMPONENT
+   ============================================ */
+
+.responsive-dialog .modal-content {
+  padding: 0;
+}
+
+.dialog-content {
+  padding: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.dialog-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Dialog type colors */
+.dialog-info .dialog-icon {
+  background: rgba(102, 126, 234, 0.2);
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.dialog-success .dialog-icon {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  border: 2px solid #00ff00;
+}
+
+.dialog-warning .dialog-icon {
+  background: rgba(255, 170, 0, 0.2);
+  color: #ffaa00;
+  border: 2px solid #ffaa00;
+}
+
+.dialog-error .dialog-icon {
+  background: rgba(255, 68, 68, 0.2);
+  color: #ff4444;
+  border: 2px solid #ff4444;
+}
+
+.dialog-message {
+  color: #cccccc;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Dialog Actions */
+.dialog-actions {
+  display: flex;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid #333333;
+  justify-content: flex-end;
+}
+
+.dialog-btn {
+  background: linear-gradient(145deg, #2d2d2d, #1a1a1a);
+  border: 2px solid #555555;
+  color: #ffffff;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  min-width: 100px;
+  min-height: 44px; /* Touch target minimum */
+}
+
+.dialog-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+}
+
+.dialog-btn:active {
+  transform: translateY(0);
+}
+
+/* Cancel button */
+.dialog-btn-cancel {
+  border-color: #666666;
+}
+
+.dialog-btn-cancel:hover {
+  border-color: #888888;
+  background: linear-gradient(145deg, #3d3d3d, #2a2a2a);
+}
+
+/* Confirm button variants */
+.dialog-btn-confirm.dialog-btn-info {
+  border-color: #667eea;
+}
+
+.dialog-btn-confirm.dialog-btn-info:hover {
+  background: linear-gradient(145deg, #1a1a3d, #0d0d2a);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.dialog-btn-confirm.dialog-btn-success {
+  border-color: #00ff00;
+}
+
+.dialog-btn-confirm.dialog-btn-success:hover {
+  background: linear-gradient(145deg, #003300, #001a00);
+  box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3);
+}
+
+.dialog-btn-confirm.dialog-btn-warning {
+  border-color: #ffaa00;
+}
+
+.dialog-btn-confirm.dialog-btn-warning:hover {
+  background: linear-gradient(145deg, #3d2a00, #2a1a00);
+  box-shadow: 0 4px 8px rgba(255, 170, 0, 0.3);
+}
+
+.dialog-btn-confirm.dialog-btn-error {
+  border-color: #ff4444;
+}
+
+.dialog-btn-confirm.dialog-btn-error:hover {
+  background: linear-gradient(145deg, #330000, #1a0000);
+  box-shadow: 0 4px 8px rgba(255, 68, 68, 0.3);
+}
+
+/* ============================================
+   MOBILE STYLES (< 768px)
+   ============================================ */
+@media (max-width: 767px) {
+  .dialog-content {
+    padding: 20px;
+    gap: 14px;
+  }
+
+  .dialog-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.75rem;
+  }
+
+  .dialog-message {
+    font-size: 0.95rem;
+  }
+
+  .dialog-actions {
+    flex-direction: column-reverse;
+    padding: 16px 20px;
+    gap: 10px;
+  }
+
+  .dialog-btn {
+    width: 100%;
+    min-width: auto;
+    padding: 14px 20px;
+  }
+}
+
+/* Very small mobile screens */
+@media (max-width: 480px) {
+  .dialog-content {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .dialog-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 1.5rem;
+  }
+
+  .dialog-message {
+    font-size: 0.9rem;
+  }
+
+  .dialog-actions {
+    padding: 14px 16px;
+  }
+
+  .dialog-btn {
+    padding: 12px 16px;
+    font-size: 0.95rem;
+  }
+}
+
+/* ============================================
+   TABLET STYLES (768px - 1023px)
+   ============================================ */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .dialog-content {
+    padding: 22px;
+  }
+
+  .dialog-actions {
+    padding: 18px 22px;
+  }
+}
+
+/* ============================================
+   DESKTOP STYLES (>= 1024px)
+   ============================================ */
+@media (min-width: 1024px) {
+  .dialog-actions {
+    padding: 20px 24px;
+  }
+
+  /* Hover effects for desktop */
+  .dialog-btn:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.dialog-btn:focus-visible {
+  outline: 2px solid #ff4444;
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .dialog-btn {
+    transition: none;
+  }
+}

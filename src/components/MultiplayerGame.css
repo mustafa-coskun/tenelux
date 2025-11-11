@@ -1,0 +1,703 @@
+.multiplayer-game {
+  width: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+  color: #ffffff;
+  font-family: 'Courier New', monospace;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.multiplayer-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 2rem;
+  overflow: hidden;
+}
+
+.multiplayer-status h2 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: #ff6b6b;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+  font-weight: 300;
+  letter-spacing: 2px;
+}
+
+.multiplayer-status p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  color: #b0b0b0;
+  line-height: 1.6;
+}
+
+.multiplayer-status.error h2 {
+  color: #ff4757;
+}
+
+.error-message {
+  color: #ff4757 !important;
+  background: rgba(255, 71, 87, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  margin-bottom: 2rem;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(255, 107, 107, 0.3);
+  border-top: 3px solid #ff6b6b;
+  border-radius: 50%;
+  animation: multiplayerSpin 1s linear infinite;
+  margin: 2rem auto;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes multiplayerSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.cancel-button,
+.retry-button,
+.back-button {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-family: 'Courier New', monospace;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.cancel-button:hover,
+.retry-button:hover,
+.back-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+  background: linear-gradient(135deg, #ee5a52 0%, #ff6b6b 100%);
+}
+
+.cancel-button:active,
+.retry-button:active,
+.back-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+}
+
+.back-button {
+  background: linear-gradient(135deg, #666 0%, #555 100%);
+  box-shadow: 0 4px 15px rgba(102, 102, 102, 0.3);
+}
+
+.back-button:hover {
+  background: linear-gradient(135deg, #555 0%, #666 100%);
+  box-shadow: 0 6px 20px rgba(102, 102, 102, 0.4);
+}
+
+.lobby-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.join-queue-btn {
+  background: linear-gradient(135deg, #00d2d3 0%, #54a0ff 100%);
+  color: white;
+  border: none;
+  padding: 1.2rem 2.5rem;
+  font-size: 1.2rem;
+  font-family: 'Courier New', monospace;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(0, 210, 211, 0.3);
+}
+
+.join-queue-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 210, 211, 0.4);
+  background: linear-gradient(135deg, #54a0ff 0%, #00d2d3 100%);
+}
+
+.back-btn {
+  background: linear-gradient(135deg, #666 0%, #555 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-family: 'Courier New', monospace;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(102, 102, 102, 0.3);
+}
+
+.back-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #555 0%, #666 100%);
+  box-shadow: 0 6px 20px rgba(102, 102, 102, 0.4);
+}
+
+.cancel-btn {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-family: 'Courier New', monospace;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  margin-top: 1rem;
+}
+
+.cancel-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+  background: linear-gradient(135deg, #ee5a52 0%, #ff6b6b 100%);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .multiplayer-status {
+    padding: 1rem;
+  }
+
+  .multiplayer-status h2 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .multiplayer-status p {
+    font-size: 1rem;
+  }
+
+  .cancel-button,
+  .retry-button,
+  .back-button {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .multiplayer-status h2 {
+    font-size: 1.5rem;
+  }
+
+  .cancel-button,
+  .retry-button,
+  .back-button {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+    margin: 0.3rem;
+  }
+}
+/* Simple Round Result Styles (SinglePlayer gibi sade) */
+.simple-round-result {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.simple-round-result p {
+  font-size: 1.1rem;
+  margin: 0.8rem 0;
+  color: #e0e0e0;
+}
+
+.simple-round-result .scores {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.simple-round-result .scores p {
+  font-size: 1.2rem;
+  color: #00d2d3;
+  font-weight: bold;
+}
+
+.game-over-simple {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.game-over-simple h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #ff6b6b;
+}
+
+.game-over-simple p {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: #e0e0e0;
+}
+
+/* Mobile responsive for simple round results */
+@media (max-width: 768px) {
+  .simple-round-result {
+    padding: 1rem;
+    margin: 0.5rem 0;
+  }
+
+  .simple-round-result p {
+    font-size: 1rem;
+  }
+
+  .simple-round-result .scores p {
+    font-size: 1.1rem;
+  }
+
+  .game-over-simple h3 {
+    font-size: 1.3rem;
+  }
+
+  .game-over-simple p {
+    font-size: 1rem;
+  }
+}
+/* Reversal rejection message styles */
+.reversal-rejection-message {
+  margin-bottom: 2rem;
+}
+
+.rejection-alert {
+  background: rgba(255, 107, 107, 0.1);
+  border: 2px solid rgba(255, 107, 107, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: slideInDown 0.5s ease-out;
+}
+
+.rejection-icon {
+  font-size: 2rem;
+  color: #ff6b6b;
+}
+
+.rejection-alert p {
+  margin: 0;
+  color: #ff6b6b;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* Reversal selection message styles */
+.reversal-selection-message {
+  background: rgba(76, 175, 80, 0.1);
+  border: 2px solid rgba(76, 175, 80, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  animation: slideInDown 0.5s ease-out;
+}
+
+.reversal-selection-message p {
+  margin: 0;
+  color: #4caf50;
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Animation for messages */
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced reversal card styles */
+.reversal-card {
+  background: rgba(30, 30, 30, 0.95);
+  border: 2px solid rgba(255, 107, 107, 0.3);
+  border-radius: 16px;
+  padding: 2.5rem;
+  max-width: 600px;
+  width: 90%;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.reversal-card h2 {
+  color: #ff6b6b;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+}
+
+.reversal-buttons {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.reversal-btn {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.decline-btn {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: 2px solid rgba(255, 107, 107, 0.5);
+}
+
+.decline-btn:hover:not(:disabled) {
+  background: rgba(255, 107, 107, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.accept-btn {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 2px solid rgba(76, 175, 80, 0.5);
+}
+
+.accept-btn:hover:not(:disabled) {
+  background: rgba(76, 175, 80, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.reversal-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}/*
+ Tournament-specific styles */
+.tournament-game-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tournament-match-header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px solid #ffd700;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.tournament-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.tournament-info h3 {
+  color: #ffd700;
+  margin: 0;
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+.elimination-badge {
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+  animation: pulse 2s infinite;
+}
+
+.match-players {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  font-size: 1.2em;
+}
+
+.match-players .player-name {
+  color: #00d4ff;
+  font-weight: bold;
+  padding: 8px 16px;
+  background: rgba(0, 212, 255, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.match-players .vs-text {
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.tournament-match-complete {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.tournament-match-complete h2 {
+  color: #ffd700;
+  margin-bottom: 16px;
+}
+
+.elimination-result {
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+}
+
+.elimination-result h3 {
+  color: white;
+  margin: 0;
+  font-size: 1.3em;
+}
+
+/* Animation for elimination badge */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+  }
+  50% {
+    box-shadow: 0 2px 20px rgba(255, 71, 87, 0.8);
+  }
+  100% {
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+  }
+}
+
+/* Responsive design for tournament header */
+@media (max-width: 768px) {
+  .tournament-match-header {
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .tournament-info h3 {
+    font-size: 1.2em;
+  }
+  
+  .match-players {
+    flex-direction: column;
+    gap: 12px;
+    font-size: 1.1em;
+  }
+  
+  .match-players .vs-text {
+    font-size: 1em;
+  }
+}
+
+
+/* ============================================
+   RESPONSIVE MULTIPLAYER GAME STYLES
+   ============================================ */
+
+/* Mobile Styles (< 768px) */
+@media (max-width: 767px) {
+  .multiplayer-game.mobile {
+    padding: 10px;
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .multiplayer-status {
+    padding: 20px 15px;
+  }
+
+  .multiplayer-status h2 {
+    font-size: 1.5rem;
+  }
+
+  .multiplayer-status p {
+    font-size: 0.9rem;
+  }
+
+  .queue-info {
+    padding: 12px;
+  }
+
+  .queue-stat {
+    font-size: 0.85rem;
+  }
+
+  .cancel-queue-btn,
+  .leave-lobby-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 0.95rem;
+  }
+
+  .decision-reversal-screen {
+    padding: 15px;
+  }
+
+  .reversal-card {
+    padding: 20px 15px;
+  }
+
+  .reversal-card h2 {
+    font-size: 1.3rem;
+  }
+
+  .reversal-card p {
+    font-size: 0.9rem;
+  }
+
+  .reversal-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .reversal-buttons button {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .rounds-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .round-btn {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+
+  .game-ended {
+    padding: 15px;
+  }
+}
+
+/* Very small mobile (< 480px) */
+@media (max-width: 480px) {
+  .multiplayer-game.mobile {
+    padding: 8px;
+  }
+
+  .multiplayer-status h2 {
+    font-size: 1.3rem;
+  }
+
+  .reversal-card {
+    padding: 16px 12px;
+  }
+
+  .reversal-card h2 {
+    font-size: 1.1rem;
+  }
+
+  .rounds-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .round-btn {
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Tablet Styles (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .multiplayer-game.tablet {
+    padding: 18px;
+  }
+
+  .multiplayer-status {
+    padding: 30px 25px;
+  }
+
+  .reversal-card {
+    padding: 30px 25px;
+  }
+
+  .rounds-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Desktop Styles (>= 1024px) */
+@media (min-width: 1024px) {
+  .multiplayer-game {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .multiplayer-status {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .reversal-card {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .rounds-grid {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Hover effects for desktop */
+  .round-btn:hover {
+    transform: translateY(-3px);
+  }
+}

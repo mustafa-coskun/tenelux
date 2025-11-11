@@ -1,0 +1,154 @@
+.connection-debug {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 400px;
+  max-height: 80vh;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  z-index: 10000;
+  overflow-y: auto;
+}
+
+.debug-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px 12px 0 0;
+}
+
+.debug-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.debug-content {
+  padding: 15px 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.debug-section {
+  margin-bottom: 20px;
+}
+
+.debug-section:last-child {
+  margin-bottom: 0;
+}
+
+.debug-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.9rem;
+  color: #ffc107;
+  border-bottom: 1px solid rgba(255, 193, 7, 0.3);
+  padding-bottom: 5px;
+}
+
+.debug-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+
+.debug-item .label {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.debug-item .value {
+  color: #fff;
+  word-break: break-all;
+  text-align: right;
+  flex: 1;
+}
+
+.debug-item .value.small {
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.status-connecting {
+  color: #ffc107 !important;
+}
+
+.status-connected {
+  color: #28a745 !important;
+}
+
+.status-disconnected {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.status-error {
+  color: #dc3545 !important;
+}
+
+.test-btn {
+  width: 100%;
+  padding: 10px 16px;
+  background: rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(102, 126, 234, 0.5);
+  border-radius: 8px;
+  color: #667eea;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
+
+.test-btn:hover:not(:disabled) {
+  background: rgba(102, 126, 234, 0.3);
+  border-color: rgba(102, 126, 234, 0.7);
+}
+
+.test-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Scrollbar styling */
+.debug-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.debug-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.debug-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.debug-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .connection-debug {
+    width: calc(100% - 40px);
+    right: 20px;
+    left: 20px;
+  }
+  
+  .debug-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .debug-item .value {
+    text-align: left;
+    margin-top: 4px;
+  }
+}
