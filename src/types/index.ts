@@ -184,6 +184,7 @@ export interface GameBoardProps {
   onCommunication: (message: string) => void;
   messages?: Array<{ playerId: string; message: string; timestamp: Date }>;
   timerSync?: { round: number; duration: number } | null;
+  disableReversalTimer?: boolean;
 }
 
 export interface CommunicationPanelProps {

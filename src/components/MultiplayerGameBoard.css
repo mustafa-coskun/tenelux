@@ -101,9 +101,9 @@
 
 .game-content {
   flex: 1;
-  display: flex;
+  /* display: flex; */
   flex-direction: column;
-  padding: 2rem;
+  /* padding: 2rem; */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }

@@ -228,13 +228,13 @@ const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
         <h3 className="section-title">{t('statisticsPanel.gameResult')}</h3>
         <div className="outcome-content">
           {(() => {
-            // Calculate total points for comparison
-            const playerTotalPoints = roundData.reduce((sum, round) => sum + round.points, 0);
+            // Use statistics.totalPoints directly (from server or calculated)
+            const playerTotalPoints = statistics.totalPoints || roundData.reduce((sum, round) => sum + round.points, 0);
             
             // For multiplayer games, we need to determine winner based on points
             // since session.winner might not be set correctly
             if (isMultiplayer && session.players.length > 1) {
-              // Use provided opponent points if available (for forfeit cases)
+              // Use provided opponent points (from server)
               let opponentTotalPoints = (statistics as any).opponentTotalPoints;
               const opponentPlayer = session.players.find(p => p.id !== humanPlayer?.id);
               

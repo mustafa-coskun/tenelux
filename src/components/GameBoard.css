@@ -1,5 +1,5 @@
 .game-board {
-  height: 100vh;
+  /* height: 100vh; */
   max-height: 100vh;
   background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
   color: #ffffff;
@@ -58,7 +58,7 @@
   max-width: 1200px;
   margin: 0 auto;
   flex: 1;
-  display: flex;
+  /* display: flex; */
   flex-direction: column;
   overflow-y: auto;
   min-height: 0;
@@ -1095,7 +1095,7 @@
   .game-board {
     padding: 10px;
     min-height: 100vh;
-    height: 100vh;
+    /* height: 100vh; */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -1382,7 +1382,7 @@
 @media (max-width: 768px) and (orientation: landscape) {
   .game-board {
     padding: 8px;
-    height: 100vh;
+    /* height: 100vh; */
     overflow-y: auto;
   }
 

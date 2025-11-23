@@ -168,6 +168,7 @@ export const TournamentMatchBoard: React.FC<TournamentMatchBoardProps> = ({
         onCommunication={onCommunicationMessage}
         messages={messages}
         timerSync={timerSync}
+        disableReversalTimer={true}
       />
 
       <div className="tournament-match-actions">
@@ -179,12 +180,6 @@ export const TournamentMatchBoard: React.FC<TournamentMatchBoardProps> = ({
             {t('statistics.title')}
           </button>
         )}
-        <button
-          className="btn btn-secondary end-match-btn"
-          onClick={() => onMatchEnd('forfeit')}
-        >
-          🏳️ Pes Et
-        </button>
       </div>
     </div>
   );

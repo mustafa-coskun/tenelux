@@ -700,8 +700,9 @@ const PartyGame: React.FC<PartyGameProps> = ({ humanPlayer, onGameEnd }) => {
     });
 
     // Tournament match ready handler
+    console.log('🏆 Setting up TOURNAMENT_MATCH_READY handler');
     partyWsClient.setOnTournamentMatchReady((matchData) => {
-      console.log('🏆 Tournament match ready:', matchData);
+      console.log('🏆 HANDLER CALLED - Tournament match ready:', matchData);
       
       // Get current tournament data from PartyStateManager (not from closure)
       const latestTournamentData = partyStateManager.getCurrentTournament();
@@ -728,19 +729,40 @@ const PartyGame: React.FC<PartyGameProps> = ({ humanPlayer, onGameEnd }) => {
         dbPlayerId,
         player1Id: matchData.player1Id,
         player2Id: matchData.player2Id,
+        player1: matchData.player1,
+        player2: matchData.player2,
         opponent: opponent?.name,
+        opponentId: opponent?.id,
         round: matchData.round,
-        isMyMatch: !!opponent
+        isMyMatch: !!opponent,
+        player1Match: matchData.player1Id === wsPlayerId || matchData.player1Id === dbPlayerId,
+        player2Match: matchData.player2Id === wsPlayerId || matchData.player2Id === dbPlayerId
       });
       
       // Only process if this is the current player's match (opponent was found)
       if (!opponent) {
-        console.log('🏆 This match is not for current player, ignoring');
+        console.error('❌ Opponent not found! This match is not for current player.', {
+          wsPlayerId,
+          dbPlayerId,
+          player1Id: matchData.player1Id,
+          player2Id: matchData.player2Id,
+          player1: matchData.player1,
+          player2: matchData.player2,
+          reason: 'Player ID mismatch - neither player1Id nor player2Id matches current player'
+        });
         return;
       }
       
+      console.log('✅ Opponent found:', opponent.name);
+      
       // Store match data for MultiplayerGame component
-      if (matchData.matchId && opponent && latestTournamentData) {
+      if (!latestTournamentData) {
+        console.error('❌ Tournament data not found!');
+        setError('Turnuva verisi bulunamadı');
+        return;
+      }
+      
+      if (matchData.matchId && opponent) {
         console.log('🏆 Creating active match...');
         const activeMatch: ActiveMatch = {
           id: matchData.matchId,
@@ -773,11 +795,30 @@ const PartyGame: React.FC<PartyGameProps> = ({ humanPlayer, onGameEnd }) => {
         
         console.log('🏆 Active match created:', activeMatch);
         
+        // If already in match phase, transition back to tournament first
+        const currentPhase = partyStateManager.getCurrentPhase();
+        if (currentPhase === 'match') {
+          console.log('🏆 Already in match phase, transitioning to tournament first');
+          partyStateManager.transitionToTournament(latestTournamentData, 'server_event');
+        }
+        
         // Use PartyStateManager to transition to match
         const success = partyStateManager.transitionToMatch(activeMatch, 'server_event');
         console.log('🏆 Transition to match result:', success);
         
+        // Verify state after transition
+        const verifyMatch = partyStateManager.getCurrentMatch();
+        const verifyPhase = partyStateManager.getCurrentPhase();
+        console.log('🏆 State after transition:', {
+          success,
+          currentPhase: verifyPhase,
+          hasMatch: !!verifyMatch,
+          matchId: verifyMatch?.id
+        });
+        
         if (success) {
+          console.log('✅ Transition successful!');
+          
           // Add system message
           addSystemMessage(`Turnuva maçınız başlıyor! Rakibiniz: ${opponent.name}`);
           
@@ -799,8 +840,19 @@ const PartyGame: React.FC<PartyGameProps> = ({ humanPlayer, onGameEnd }) => {
           }
           
           console.log('🏆 Match started successfully!');
+          
+          // Force a re-render to ensure UI updates
+          setTimeout(() => {
+            const finalCheck = partyStateManager.getCurrentMatch();
+            console.log('🏆 Final match check after timeout:', {
+              hasMatch: !!finalCheck,
+              matchId: finalCheck?.id,
+              phase: partyStateManager.getCurrentPhase()
+            });
+          }, 100);
         } else {
           console.error('❌ Failed to transition to match state');
+          console.error('❌ Validation failed - check PartyStateManager.validateMatchData');
           setError('Maç durumuna geçiş başarısız oldu');
         }
       } else {
@@ -1437,11 +1489,23 @@ const PartyGame: React.FC<PartyGameProps> = ({ humanPlayer, onGameEnd }) => {
         console.log('🏳️ Tournament render - currentMatch:', currentMatch);
         console.log('🏳️ Tournament render - currentPhase:', currentPhase);
         console.log('🏳️ Tournament status:', currentTournamentData?.status);
+        console.log('🏳️ Tournament render - match details:', {
+          hasMatch: !!currentMatch,
+          matchId: currentMatch?.id,
+          phase: currentPhase,
+          tournamentStatus: currentTournamentData?.status
+        });
 
         // If tournament is completed, show results
         if (currentTournamentData?.status === 'completed') {
           const winner = currentTournamentData.players.find((p: TournamentPlayer) => p.currentRank === 1);
-          const myPlayer = currentTournamentData.players.find((p: TournamentPlayer) => p.id === humanPlayer.id);
+          // Try to find player by ID first, then by name as fallback
+          const myPlayer = currentTournamentData.players.find((p: TournamentPlayer) => 
+            p.id === humanPlayer.id || 
+            p.id === String(humanPlayer.id) ||
+            p.name === humanPlayer.displayName ||
+            p.name === humanPlayer.username
+          );
           
           return (
             <div className="tournament-results-screen">
@@ -1465,10 +1529,15 @@ const PartyGame: React.FC<PartyGameProps> = ({ humanPlayer, onGameEnd }) => {
                   <div className="rankings-list">
                     {currentTournamentData.players
                       .sort((a: TournamentPlayer, b: TournamentPlayer) => a.currentRank - b.currentRank)
-                      .map((player: TournamentPlayer, index: number) => (
+                      .map((player: TournamentPlayer, index: number) => {
+                        const isMyPlayer = player.id === humanPlayer.id || 
+                                          player.id === String(humanPlayer.id) ||
+                                          player.name === humanPlayer.displayName ||
+                                          player.name === humanPlayer.username;
+                        return (
                         <div 
                           key={player.id} 
-                          className={`ranking-item ${player.id === humanPlayer.id ? 'my-rank' : ''} ${index === 0 ? 'first-place' : ''}`}
+                          className={`ranking-item ${isMyPlayer ? 'my-rank' : ''} ${index === 0 ? 'first-place' : ''}`}
                         >
                           <div className="rank-number">
                             {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${player.currentRank}`}
@@ -1482,7 +1551,8 @@ const PartyGame: React.FC<PartyGameProps> = ({ humanPlayer, onGameEnd }) => {
                             </div>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                   </div>
                 </div>
 
@@ -1525,6 +1595,7 @@ const PartyGame: React.FC<PartyGameProps> = ({ humanPlayer, onGameEnd }) => {
           console.log('🏳️ Showing MultiplayerGame for match:', currentMatch.id);
           return (
             <TournamentMatchGame
+              key={currentMatch.id}
               humanPlayer={humanPlayer}
               opponent={{
                 id: currentMatch.player2.id,
@@ -1537,6 +1608,7 @@ const PartyGame: React.FC<PartyGameProps> = ({ humanPlayer, onGameEnd }) => {
               matchId={currentMatch.id}
               tournamentId={currentTournamentData.id}
               tournamentRoundNumber={currentMatch.roundNumber}
+              maxRounds={(currentTournamentData as any).settings?.roundCount || (currentMatch as any).maxRounds || 10}
               partyWsClient={partyWsClient}
               onMatchEnd={(result?: 'normal' | 'forfeit') => {
                 console.log('🏳️ *** TOURNAMENT GAME END ***', result);

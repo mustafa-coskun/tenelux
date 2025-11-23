@@ -15,6 +15,7 @@ interface TournamentMatchGameProps {
   matchId: string;
   tournamentId: string;
   tournamentRoundNumber: number; // Which round of the tournament (e.g., semifinals, finals)
+  maxRounds?: number; // Number of rounds in this match
   partyWsClient: PartyWebSocketClient;
   onMatchEnd: (result?: 'normal' | 'forfeit') => void;
 }
@@ -23,6 +24,8 @@ enum MatchState {
   WAITING = 'waiting',
   IN_GAME = 'in_game',
   DECISION_REVERSAL = 'decision_reversal',
+  ROUND_SELECTION = 'round_selection',
+  DECISION_CHANGE = 'decision_change',
   STATISTICS = 'statistics',
 }
 
@@ -32,6 +35,7 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
   matchId,
   tournamentId,
   tournamentRoundNumber,
+  maxRounds = 10,
   partyWsClient,
   onMatchEnd,
 }) => {
@@ -55,11 +59,38 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
   const [reversalTimeLeft, setReversalTimeLeft] = useState<number>(60);
   const [reversalResponseStatus, setReversalResponseStatus] = useState<{
     playerResponded: boolean;
+    opponentResponded: boolean;
     waitingForOpponent: boolean;
   }>({
     playerResponded: false,
+    opponentResponded: false,
     waitingForOpponent: false,
   });
+  const [selectedRoundForChange, setSelectedRoundForChange] = useState<number | null>(null);
+  const [reversalRejectionMessage, setReversalRejectionMessage] = useState<string | null>(null);
+  const [reversalSelectionMessage, setReversalSelectionMessage] = useState<string | null>(null);
+  const [statisticsTimeout, setStatisticsTimeout] = useState<number>(30); // 30 seconds timeout
+
+  // Statistics timeout - auto close after 30 seconds
+  useEffect(() => {
+    if (matchState === MatchState.STATISTICS && statisticsTimeout > 0) {
+      const timer = setInterval(() => {
+        setStatisticsTimeout(prev => {
+          if (prev <= 1) {
+            console.log('⏰ Statistics timeout reached, returning to tournament');
+            onMatchEnd('normal');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [matchState, statisticsTimeout, onMatchEnd]);
+
+  // Statistics timeout will auto-close, no need to listen for new match here
+  // PartyGame handles TOURNAMENT_MATCH_READY
 
   useEffect(() => {
     console.log('🏆 TournamentMatchGame mounted:', {
@@ -78,7 +109,7 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
       currentPhase: GamePhase.TRUST_PHASE,
       startTime: new Date(),
       sessionConfig: {
-        maxRounds: 10,
+        maxRounds: maxRounds,
         trustPhaseRounds: 0,
         communicationTimeLimit: 30,
         allowDecisionReversal: true,
@@ -87,10 +118,22 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
     };
 
     setCurrentSession(initialSession);
+    
+    // Reset counts for new match
+    setCooperationCount({ player1: 0, player2: 0 });
+    setBetrayalCount({ player1: 0, player2: 0 });
+    setGameStatistics(null);
+    setMatchState(MatchState.IN_GAME);
 
     // Handle match round results - track cooperation/betrayal for each round within the match
     const handleMatchRoundResult = (result: any) => {
       console.log('🏆 Tournament match round result:', result);
+      
+      // Ignore messages from other matches
+      if (result.matchId && result.matchId !== matchId) {
+        console.log('⚠️ Ignoring round result from different match:', result.matchId);
+        return;
+      }
       
       // Server sends results from player's perspective (yourDecision, opponentDecision)
       const myDecision = result.yourDecision;
@@ -125,19 +168,13 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
       setCurrentSession((prev) => {
         if (!prev) return null;
 
-        // Calculate cumulative scores up to this round
-        const previousRounds = prev.rounds || [];
-        let cumulativeYourScore = result.yourPoints;
-        let cumulativeOpponentScore = result.opponentPoints;
-        
-        // Add scores from previous rounds
-        previousRounds.forEach((round: any) => {
-          if (round.results) {
-            cumulativeYourScore += round.results.playerA;
-            cumulativeOpponentScore += round.results.playerB;
-          }
-        });
+        // Use total scores from server (already cumulative)
+        const cumulativeYourScore = result.totalYourScore || result.yourPoints;
+        const cumulativeOpponentScore = result.totalOpponentScore || result.opponentPoints;
 
+        // Determine if we are playerA or playerB in the session
+        const isPlayerA = prev.players[0].id === humanPlayer.id;
+        
         const roundData: any = {
           roundNumber: result.round,
           decisions: [
@@ -153,8 +190,8 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
             },
           ],
           results: {
-            playerA: result.yourPoints, // Points earned this round only
-            playerB: result.opponentPoints, // Points earned this round only
+            playerA: isPlayerA ? result.yourPoints : result.opponentPoints,
+            playerB: isPlayerA ? result.opponentPoints : result.yourPoints,
           },
         };
 
@@ -166,8 +203,16 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
     };
 
     // Handle new match round - update session phase to allow new decisions
-    const handleNewMatchRound = (matchRound: number, timerDuration?: number) => {
-      console.log('🏆 Tournament match - new round:', matchRound, 'Timer:', timerDuration);
+    const handleNewMatchRound = (round: number, timerDuration?: number, messageMatchId?: string) => {
+      console.log('🏆 Tournament match - new round:', round, 'Timer:', timerDuration, 'MatchId:', messageMatchId);
+      
+      // Ignore messages from other matches
+      if (messageMatchId && messageMatchId !== matchId) {
+        console.log('⚠️ Ignoring new round from different match:', messageMatchId);
+        return;
+      }
+      
+      const matchRound = round;
       
       // Update timer sync to trigger new round in GameBoard
       // Add timestamp to ensure React detects the change
@@ -191,32 +236,79 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
     const handleMatchCompleted = async (data: any) => {
       console.log('🏆 Tournament match completed:', data);
       
-      // Server sends scores from our perspective (totalYourScore, totalOpponentScore)
-      // or as player1/player2 scores
-      let myScore = 0;
-      let opponentScore = 0;
+      // Calculate actual scores from session rounds
+      let actualMyScore = 0;
+      let actualOpponentScore = 0;
       
-      if (data.finalScores) {
-        myScore = data.finalScores.player1 || 0;
-        opponentScore = data.finalScores.player2 || 0;
-      } else if (data.scores) {
-        myScore = data.scores.player1 || 0;
-        opponentScore = data.scores.player2 || 0;
+      if (currentSession) {
+        // Determine if we are playerA or playerB in the session
+        const isPlayerA = currentSession.players[0].id === humanPlayer.id;
+        
+        console.log('📊 Score calculation:', {
+          humanPlayerId: humanPlayer.id,
+          opponentId: opponent.id,
+          sessionPlayers: currentSession.players.map((p: any) => ({ id: p.id, name: p.name })),
+          isPlayerA: isPlayerA,
+          roundsCount: currentSession.rounds.length
+        });
+        
+        currentSession.rounds.forEach((round: any, index: number) => {
+          if (round.results) {
+            const myRoundScore = isPlayerA ? round.results.playerA : round.results.playerB;
+            const opponentRoundScore = isPlayerA ? round.results.playerB : round.results.playerA;
+            
+            actualMyScore += myRoundScore;
+            actualOpponentScore += opponentRoundScore;
+            
+            console.log(`📊 Round ${index}: My score: ${myRoundScore}, Opponent score: ${opponentRoundScore}, Total: ${actualMyScore}-${actualOpponentScore}`);
+          }
+        });
       }
       
-      // Determine winner based on scores
-      const winnerId = myScore > opponentScore ? humanPlayer.id : 
-                      myScore < opponentScore ? opponent.id : null;
+      console.log('📊 Final scores calculated:', { 
+        actualMyScore, 
+        actualOpponentScore, 
+        isWinner: actualMyScore > actualOpponentScore,
+        humanPlayerId: humanPlayer.id,
+        opponentId: opponent.id,
+        sessionPlayers: currentSession?.players
+      });
+      
+      // Determine winner based on actual scores
+      const winnerId = actualMyScore > actualOpponentScore ? humanPlayer.id : 
+                      actualMyScore < actualOpponentScore ? opponent.id : null;
       const loserId = winnerId === humanPlayer.id ? opponent.id : 
                      winnerId === opponent.id ? humanPlayer.id : null;
+      
+      // Determine which player is player1 and player2 based on session
+      const sessionPlayer1 = currentSession?.players[0];
+      const sessionPlayer2 = currentSession?.players[1];
+      const isHumanPlayer1 = sessionPlayer1?.id === humanPlayer.id;
+      
+      // Map scores correctly to player1 and player2
+      const player1Score = isHumanPlayer1 ? actualMyScore : actualOpponentScore;
+      const player2Score = isHumanPlayer1 ? actualOpponentScore : actualMyScore;
+      
+      console.log('🏆 Match result mapping:', {
+        humanPlayerId: humanPlayer.id,
+        opponentId: opponent.id,
+        sessionPlayer1Id: sessionPlayer1?.id,
+        sessionPlayer2Id: sessionPlayer2?.id,
+        isHumanPlayer1,
+        actualMyScore,
+        actualOpponentScore,
+        player1Score,
+        player2Score,
+        winnerId
+      });
       
       // Create match result with statistics
       const matchResult: MatchResult = {
         matchId,
-        player1Id: humanPlayer.id,
-        player2Id: opponent.id,
-        player1Score: myScore,
-        player2Score: opponentScore,
+        player1Id: sessionPlayer1?.id || humanPlayer.id,
+        player2Id: sessionPlayer2?.id || opponent.id,
+        player1Score,
+        player2Score,
         winnerId: winnerId || humanPlayer.id, // Default to humanPlayer if tie
         loserId: loserId || opponent.id,
         gameSessionId: matchId,
@@ -261,50 +353,34 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
         }
       }
       
-      // Calculate actual scores from session rounds
-      let actualMyScore = 0;
-      let actualOpponentScore = 0;
+      // Use server scores if available, otherwise use calculated scores
+      let finalPlayer1Score, finalPlayer2Score;
       
-      if (currentSession) {
+      if (data.finalScores) {
+        console.log('📊 Using server scores from data:', data.finalScores);
+        finalPlayer1Score = data.finalScores.player1;
+        finalPlayer2Score = data.finalScores.player2;
+      } else {
+        console.log('📊 Using calculated scores');
         // Determine if we are playerA or playerB in the session
-        const isPlayerA = currentSession.players[0].id === humanPlayer.id;
-        
-        console.log('📊 Score calculation:', {
-          humanPlayerId: humanPlayer.id,
-          opponentId: opponent.id,
-          sessionPlayers: currentSession.players.map((p: any) => ({ id: p.id, name: p.name })),
-          isPlayerA: isPlayerA,
-          roundsCount: currentSession.rounds.length
-        });
-        
-        currentSession.rounds.forEach((round: any, index: number) => {
-          if (round.results) {
-            const myRoundScore = isPlayerA ? round.results.playerA : round.results.playerB;
-            const opponentRoundScore = isPlayerA ? round.results.playerB : round.results.playerA;
-            
-            actualMyScore += myRoundScore;
-            actualOpponentScore += opponentRoundScore;
-            
-            console.log(`📊 Round ${index}: My score: ${myRoundScore}, Opponent score: ${opponentRoundScore}, Total: ${actualMyScore}-${actualOpponentScore}`);
-          }
-        });
+        const isPlayerA = currentSession?.players[0].id === humanPlayer.id;
+        finalPlayer1Score = isPlayerA ? actualMyScore : actualOpponentScore;
+        finalPlayer2Score = isPlayerA ? actualOpponentScore : actualMyScore;
       }
       
-      console.log('📊 Final scores calculated:', { 
-        actualMyScore, 
-        actualOpponentScore, 
-        isWinner: actualMyScore > actualOpponentScore,
-        humanPlayerId: humanPlayer.id,
-        opponentId: opponent.id,
-        sessionPlayers: currentSession?.players
-      });
-      
       const stats = {
-        finalScores: { player1: actualMyScore, player2: actualOpponentScore },
+        finalScores: { 
+          player1: finalPlayer1Score,
+          player2: finalPlayer2Score
+        },
+        yourScore: actualMyScore,
+        opponentScore: actualOpponentScore,
         gameEndReason: 'normal',
         matchResult,
         isWinner: actualMyScore > actualOpponentScore
       };
+      
+      console.log('📊 Setting game statistics:', stats);
       
       setGameStatistics(stats);
       
@@ -314,6 +390,7 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
         setReversalTimeLeft(60);
         setReversalResponseStatus({
           playerResponded: false,
+          opponentResponded: false,
           waitingForOpponent: false,
         });
       }, 3000);
@@ -409,9 +486,31 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
       });
     };
 
-    // Handle game over (when all 10 rounds complete)
+    // Handle game over (when all rounds complete)
     const handleGameOver = (data: any) => {
       console.log('🏁 Tournament match game over:', data);
+      
+      // Ignore messages from other matches
+      if (data.matchId && data.matchId !== matchId) {
+        console.log('⚠️ Ignoring game over from different match:', data.matchId);
+        return;
+      }
+      
+      // Update session with actual maxRounds from server
+      if (data.totalRounds && currentSession) {
+        setCurrentSession(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            sessionConfig: {
+              ...prev.sessionConfig,
+              maxRounds: data.totalRounds
+            }
+          };
+        });
+      }
+      
+      // Pass server scores to handleMatchCompleted
       handleMatchCompleted(data);
     };
 
@@ -419,16 +518,23 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
     const handleShowStatistics = (data: any) => {
       console.log('📊 SHOW_STATISTICS received from server:', data);
       
-      // Update statistics if provided
-      if (data.scores || data.finalScores) {
-        setGameStatistics(prev => ({
-          ...prev,
-          finalScores: data.finalScores || data.scores || prev?.finalScores,
-        }));
-      }
+      // Use server scores directly
+      setGameStatistics(prev => ({
+        ...prev,
+        yourScore: data.yourScore,
+        opponentScore: data.opponentScore,
+        finalScores: data.finalScores || data.scores || prev?.finalScores,
+        updatedDecisions: data.updatedDecisions || prev?.updatedDecisions,
+      }));
       
       // Go to statistics screen
       setMatchState(MatchState.STATISTICS);
+    };
+
+    // Handle reversal approved - both players accepted
+    const handleReversalApproved = (data: any) => {
+      console.log('🔁 Reversal approved, showing round selection');
+      setMatchState(MatchState.ROUND_SELECTION);
     };
 
     // Set up event handlers using available methods
@@ -439,6 +545,98 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
     partyWsClient.onOpponentMessage(handleOpponentMessage);
     partyWsClient.onGameOver(handleGameOver);
     partyWsClient.onShowStatistics(handleShowStatistics);
+    partyWsClient.onReversalApproved(handleReversalApproved);
+    
+    // Decision reversal handlers
+    partyWsClient.onReversalResponseReceived(() => {
+      console.log('✅ Reversal response received from opponent');
+      setReversalResponseStatus(prev => ({
+        ...prev,
+        opponentResponded: true,
+        waitingForOpponent: false
+      }));
+    });
+
+    partyWsClient.onReversalRejected((message: string) => {
+      console.log('❌ Reversal rejected:', message);
+      setReversalRejectionMessage(message);
+      setMatchState(MatchState.STATISTICS);
+    });
+
+    partyWsClient.onReversalSelectionPhase((message: string) => {
+      console.log('🔄 Reversal selection phase:', message);
+      setReversalSelectionMessage(message);
+      setMatchState(MatchState.ROUND_SELECTION);
+    });
+
+    partyWsClient.onDecisionChanged((data: any) => {
+      console.log('✅ Decision changed successfully:', data);
+
+      // Update local session data with new decision
+      setCurrentSession(prev => {
+        if (!prev) return prev;
+
+        const updatedRounds = [...prev.rounds];
+        const roundIndex = updatedRounds.findIndex((r: any) => r.roundNumber === data.roundNumber);
+
+        if (roundIndex >= 0) {
+          const round = updatedRounds[roundIndex];
+          const playerDecisionIndex = round.decisions.findIndex((d: any) => d.playerId === humanPlayer.id);
+
+          if (playerDecisionIndex >= 0) {
+            // Update the decision
+            round.decisions[playerDecisionIndex].decision =
+              data.newDecision === 'COOPERATE' ? Decision.STAY_SILENT : Decision.CONFESS;
+
+            console.log('🔄 Updated local session with new decision');
+          }
+        }
+
+        return { ...prev, rounds: updatedRounds };
+      });
+
+      // Automatically complete changes after decision is made
+      if (partyWsClient && matchId) {
+        console.log('📤 Auto-completing decision changes for match:', matchId);
+        partyWsClient.sendDecisionChangesComplete(matchId);
+
+        // Show waiting message
+        setMatchState(MatchState.DECISION_REVERSAL);
+        setReversalRejectionMessage('Kararınız değiştirildi. Diğer oyuncunun tamamlamasını bekliyoruz...');
+      } else {
+        console.error('❌ Cannot auto-complete: partyWsClient or matchId missing');
+      }
+    });
+
+    partyWsClient.onFinalScoresUpdate((data: any) => {
+      console.log('🎯 Final scores update received:', data);
+      
+      // Server already sends yourScore and opponentScore correctly
+      const yourScore = data.yourScore;
+      const opponentScore = data.opponentScore;
+      
+      console.log('🏆 Final scores from server:', {
+        yourScore,
+        opponentScore,
+        finalScores: data.finalScores,
+        winner: data.winner,
+        isWinner: yourScore > opponentScore
+      });
+      
+      // Update game statistics with final scores
+      setGameStatistics((prev: any) => ({
+        ...prev,
+        finalScores: data.finalScores,
+        yourScore: yourScore,
+        opponentScore: opponentScore,
+        isWinner: yourScore > opponentScore,
+        winner: data.winner,
+        updatedDecisions: data.updatedDecisions
+      }));
+      
+      // Go to statistics screen
+      setMatchState(MatchState.STATISTICS);
+    });
 
     return () => {
       console.log('🏆 TournamentMatchGame unmounted');
@@ -450,6 +648,12 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
       partyWsClient.onOpponentMessage(() => {});
       partyWsClient.onGameOver(() => {});
       partyWsClient.onShowStatistics(() => {});
+      partyWsClient.onReversalApproved(() => {});
+      partyWsClient.onReversalResponseReceived(() => {});
+      partyWsClient.onReversalRejected(() => {});
+      partyWsClient.onReversalSelectionPhase(() => {});
+      partyWsClient.onDecisionChanged(() => {});
+      partyWsClient.onFinalScoresUpdate(() => {});
     };
   }, [matchId, tournamentId, humanPlayer.id, opponent.id]);
 
@@ -464,12 +668,19 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
           if (prev <= 1) {
             // Time's up - auto reject
             console.log('⏰ Reversal timeout - auto rejecting');
-            setReversalResponseStatus(prev => ({
-              ...prev,
-              playerResponded: true,
-            }));
-            // Go directly to statistics
-            setMatchState(MatchState.STATISTICS);
+            if (partyWsClient && matchId) {
+              partyWsClient.send({
+                type: 'DECISION_REVERSAL_RESPONSE',
+                matchId: matchId,
+                tournamentId: tournamentId,
+                accept: false,
+              });
+              setReversalResponseStatus(prev => ({
+                ...prev,
+                playerResponded: true,
+                waitingForOpponent: true
+              }));
+            }
             return 0;
           }
           return prev - 1;
@@ -477,6 +688,10 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
       }, 1000);
     } else if (reversalResponseStatus.playerResponded) {
       console.log('⏰ Player already responded, stopping timer');
+      // Player already responded, stop the timer
+      if (interval) {
+        clearInterval(interval);
+      }
     }
 
     return () => {
@@ -595,25 +810,30 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
 
   const handleDecisionReversal = (accept: boolean) => {
     console.log(`🔄 Decision reversal: ${accept ? 'ACCEPT' : 'DECLINE'}`);
+    console.log('Current reversal status:', reversalResponseStatus);
     
-    // Mark that player responded
-    setReversalResponseStatus({
+    // Always send response to server first
+    if (partyWsClient && matchId) {
+      console.log('📤 Sending reversal response to server');
+      partyWsClient.send({
+        type: 'DECISION_REVERSAL_RESPONSE',
+        matchId: matchId,
+        tournamentId: tournamentId,
+        accept: accept,
+      });
+    }
+
+    // Mark that this player has responded and set waiting state
+    setReversalResponseStatus((prev) => ({
+      ...prev,
       playerResponded: true,
-      waitingForOpponent: !accept, // Only wait if accepted
-    });
+      waitingForOpponent: true, // Always wait for opponent's response
+    }));
 
-    // Send response to server
-    partyWsClient.send({
-      type: 'DECISION_REVERSAL_RESPONSE',
-      matchId: matchId,
-      tournamentId: tournamentId,
-      accept: accept,
-    });
-
-    console.log('📤 Sent decision reversal response to server:', accept);
+    console.log('📝 Player response sent, waiting for server to handle both responses');
     
-    // If declined, server will send SHOW_STATISTICS immediately
-    // If accepted, wait for server to handle both players' responses
+    // Don't change state here - wait for server response
+    // Server will send appropriate message based on both players' responses
   };
 
   // Decision Reversal Screen
@@ -621,38 +841,161 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
     return (
       <div className="decision-reversal-screen">
         <div className="reversal-card">
-          <h2>🔄 Karar Değiştirme</h2>
+          <h2>🔄 Karar Değiştirme Fırsatı</h2>
           
           {reversalResponseStatus.waitingForOpponent ? (
             <div className="waiting-for-opponent">
-              <p>Yanıtınız alındı. Diğer oyuncunun yanıtı bekleniyor...</p>
+              <div className="waiting-icon">⏳</div>
+              <h3>Yanıtınız Alındı</h3>
+              <p>Diğer oyuncunun yanıtı bekleniyor...</p>
               <div className="loading-spinner"></div>
+              <p className="waiting-note">Her iki oyuncu kabul ederse kararlarınızı değiştirebileceksiniz.</p>
             </div>
           ) : (
             <>
-              <div className="reversal-timer">
-                <p>⏰ Kalan süre: {reversalTimeLeft} saniye</p>
+              <div className="reversal-timer-banner">
+                <span className="timer-icon">⏰</span>
+                <span className="timer-text">Kalan Süre: <strong>{reversalTimeLeft}</strong> saniye</span>
               </div>
-              <p>Maç bitti! Kararlarınızı gözden geçirmek ister misiniz?</p>
-              <p className="reversal-note">Her iki oyuncu kabul ederse, kararlar yeniden değerlendirilebilir.</p>
+              
+              <div className="reversal-content">
+                <div className="reversal-icon">🎯</div>
+                <h3>Maç Tamamlandı!</h3>
+                <p className="reversal-question">Kararlarınızı gözden geçirmek ister misiniz?</p>
+                <p className="reversal-note">
+                  <span className="note-icon">ℹ️</span>
+                  Her iki oyuncu kabul ederse, istediğiniz bir turu seçip kararınızı değiştirebilirsiniz.
+                </p>
+              </div>
+
               <div className="reversal-buttons">
                 <button
                   className="reversal-btn decline-btn"
                   onClick={() => handleDecisionReversal(false)}
                   disabled={reversalResponseStatus.playerResponded}
                 >
-                  Hayır, Değiştirmek İstemiyorum
+                  <span className="btn-icon">❌</span>
+                  <span className="btn-text">Hayır, Sonuçları Gör</span>
                 </button>
                 <button
                   className="reversal-btn accept-btn"
                   onClick={() => handleDecisionReversal(true)}
                   disabled={reversalResponseStatus.playerResponded}
                 >
-                  Evet, Bir Kararımı Değiştirmek İstiyorum
+                  <span className="btn-icon">✅</span>
+                  <span className="btn-text">Evet, Değiştirmek İstiyorum</span>
                 </button>
               </div>
             </>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  // Round Selection Screen
+  if (matchState === MatchState.ROUND_SELECTION && currentSession) {
+    return (
+      <div className="decision-reversal-screen">
+        <div className="reversal-card">
+          <h2>🔄 Hangi Turu Değiştirmek İstiyorsunuz?</h2>
+          <p>Değiştirmek istediğiniz turu seçin:</p>
+          
+          <div className="round-selection">
+            <div className="rounds-grid">
+              {currentSession.rounds.map((round: any, index: number) => (
+                <button
+                  key={index}
+                  className="round-btn"
+                  onClick={() => {
+                    setSelectedRoundForChange(round.roundNumber);
+                    setMatchState(MatchState.DECISION_CHANGE);
+                  }}
+                >
+                  Tur {round.roundNumber + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="selection-actions">
+            <button 
+              className="cancel-selection-btn"
+              onClick={() => {
+                setMatchState(MatchState.STATISTICS);
+              }}
+            >
+              ❌ İptal Et ve Sonuçları Gör
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Decision Change Screen
+  if (matchState === MatchState.DECISION_CHANGE && selectedRoundForChange !== null && currentSession) {
+    const selectedRound = currentSession.rounds.find((r: any) => r.roundNumber === selectedRoundForChange);
+    const myDecision = selectedRound?.decisions.find((d: any) => d.playerId === humanPlayer.id);
+    const opponentDecision = selectedRound?.decisions.find((d: any) => d.playerId === opponent.id);
+    
+    const handleDecisionChange = (newDecision: Decision) => {
+      console.log('🔄 Decision change submitted:', {
+        selectedRound: selectedRoundForChange,
+        newDecision: newDecision,
+        currentMatchId: matchId,
+        totalRounds: currentSession?.rounds.length
+      });
+
+      if (partyWsClient && matchId && selectedRoundForChange !== null) {
+        // Convert Decision enum to server format
+        const serverDecision = newDecision === Decision.STAY_SILENT ? 'COOPERATE' : 'BETRAY';
+
+        console.log('📤 Sending decision change request to server:', {
+          round: selectedRoundForChange,
+          newDecision: serverDecision,
+          matchId: matchId
+        });
+
+        partyWsClient.sendDecisionChangeRequest(matchId, selectedRoundForChange, serverDecision);
+        
+        // Wait for server response (onDecisionChanged will handle the transition)
+        // Don't change state here
+      } else {
+        console.error('❌ Cannot send decision change - missing data');
+        setMatchState(MatchState.STATISTICS);
+      }
+    };
+    
+    return (
+      <div className="decision-reversal-screen">
+        <div className="reversal-card">
+          <h2>🔄 Tur {selectedRoundForChange + 1} - Kararınızı Değiştirin</h2>
+          <p>Yeni kararınızı seçin:</p>
+
+          <div className="decision-buttons">
+            <button
+              className="decision-btn stay-silent-btn"
+              onClick={() => handleDecisionChange(Decision.STAY_SILENT)}
+            >
+              🤝 İşbirliği Yap
+            </button>
+            <button
+              className="decision-btn confess-btn"
+              onClick={() => handleDecisionChange(Decision.CONFESS)}
+            >
+              ⚡ İhanet Et
+            </button>
+          </div>
+
+          <div className="change-actions">
+            <button
+              className="back-btn"
+              onClick={() => setMatchState(MatchState.ROUND_SELECTION)}
+            >
+              ← Farklı Bir Tur Seç
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -665,12 +1008,18 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
           currentPhase={GamePhase.TRUST_PHASE}
         />
 
+        {statisticsTimeout > 0 && (
+          <div className="statistics-timeout-banner">
+            <p>⏰ Otomatik olarak turnuvaya dönülecek: {statisticsTimeout} saniye</p>
+          </div>
+        )}
+
         <StatisticsPanel
           statistics={{
             cooperationPercentage: calculateCooperationPercentage(currentSession),
             betrayalPercentage: calculateBetrayalPercentage(currentSession),
-            totalPoints: gameStatistics.finalScores.player1 || 0,
-            opponentTotalPoints: gameStatistics.finalScores.player2 || 0,
+            totalPoints: gameStatistics.yourScore || gameStatistics.finalScores?.player1 || 0,
+            opponentTotalPoints: gameStatistics.opponentScore || gameStatistics.finalScores?.player2 || 0,
             gameEndReason: gameStatistics.gameEndReason,
             gamesWon: gameStatistics.isWinner ? 1 : 0,
             gamesLost: gameStatistics.isWinner ? 0 : 1,
@@ -686,7 +1035,7 @@ export const TournamentMatchGame: React.FC<TournamentMatchGameProps> = ({
             className="continue-tournament-btn"
             onClick={() => onMatchEnd('normal')}
           >
-            🏆 Turnuvaya Dön
+            🏆 Şimdi Turnuvaya Dön
           </button>
         </div>
       </div>

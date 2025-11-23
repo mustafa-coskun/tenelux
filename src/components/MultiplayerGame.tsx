@@ -470,29 +470,9 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       console.log('📊 Statistics received:', data);
       console.log('📊 Setting game statistics and switching to STATISTICS state');
       
-      // Fix score assignment based on player ID
-      const actualPlayerId = wsClient.current?.getPlayerId() || humanPlayer.id;
-      const isPlayer1 = currentSession?.players[0]?.id === actualPlayerId;
-      
-      console.log('📊 Score assignment debug:', {
-        actualPlayerId,
-        isPlayer1,
-        originalScores: data.finalScores,
-        player1Id: currentSession?.players[0]?.id,
-        player2Id: currentSession?.players[1]?.id
-      });
-      
-      // Correct the final scores based on player position
-      const correctedData = {
-        ...data,
-        finalScores: {
-          player1: isPlayer1 ? data.finalScores.player1 : data.finalScores.player2,
-          player2: isPlayer1 ? data.finalScores.player2 : data.finalScores.player1
-        }
-      };
-      
-      console.log('📊 Corrected scores:', correctedData.finalScores);
-      setGameStatistics(correctedData);
+      // Server sends correct scores, use them directly
+      console.log('📊 Using server scores directly:', data.finalScores);
+      setGameStatistics(data);
 
       // Update session with changed decisions if provided
       if (data.updatedDecisions) {
@@ -1240,21 +1220,23 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
                     calculateCooperationPercentage(currentSession),
                   betrayalPercentage:
                     calculateBetrayalPercentage(currentSession),
-                  totalPoints: gameStatistics.finalScores.player1 || 0,
-                  opponentTotalPoints: gameStatistics.finalScores.player2 || 0,
+                  totalPoints: gameStatistics.yourScore || gameStatistics.finalScores?.player1 || 0,
+                  opponentTotalPoints: gameStatistics.opponentScore || gameStatistics.finalScores?.player2 || 0,
                   gameEndReason: gameStatistics.gameEndReason,
                   gamesWon: (() => {
                     const isForfeitWin = gameStatistics.gameEndReason === 'opponent_forfeit';
                     const isWinner = gameStatistics.isWinner;
-                    const scoreWin = (gameStatistics.finalScores.player1 || 0) > (gameStatistics.finalScores.player2 || 0);
+                    const myScore = gameStatistics.yourScore || gameStatistics.finalScores?.player1 || 0;
+                    const oppScore = gameStatistics.opponentScore || gameStatistics.finalScores?.player2 || 0;
+                    const scoreWin = myScore > oppScore;
                     
                     console.log('🏆 Games won calculation:', {
                       gameEndReason: gameStatistics.gameEndReason,
                       isWinner: gameStatistics.isWinner,
                       isForfeitWin,
                       scoreWin,
-                      player1Score: gameStatistics.finalScores.player1,
-                      player2Score: gameStatistics.finalScores.player2,
+                      myScore,
+                      oppScore,
                       finalResult: (isForfeitWin || isWinner || scoreWin) ? 'WON' : 'LOST'
                     });
                     
@@ -1263,7 +1245,9 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
                   gamesLost: (() => {
                     const isForfeitWin = gameStatistics.gameEndReason === 'opponent_forfeit';
                     const isWinner = gameStatistics.isWinner;
-                    const scoreLoss = (gameStatistics.finalScores.player1 || 0) < (gameStatistics.finalScores.player2 || 0);
+                    const myScore = gameStatistics.yourScore || gameStatistics.finalScores?.player1 || 0;
+                    const oppScore = gameStatistics.opponentScore || gameStatistics.finalScores?.player2 || 0;
+                    const scoreLoss = myScore < oppScore;
                     
                     return (isForfeitWin || isWinner) ? 0 : (scoreLoss ? 1 : 0);
                   })(),

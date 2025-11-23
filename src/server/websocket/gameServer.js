@@ -153,27 +153,27 @@ class GameServer {
 
     broadcastToMatch(matchId, message) {
         try {
-            if (!this || !this.activeMatches || !this.tournamentMatches) {
-            console.warn('⚠️ broadcastToMatch called with invalid context or missing maps.');
-            return;
+            if (!this.activeMatches || !this.tournamentMatches) {
+                console.warn('⚠️ broadcastToMatch called with missing maps.');
+                return;
             }
 
             const match =
-            this.activeMatches.get(matchId) ||
-            this.tournamentMatches.get(matchId);
+                this.activeMatches.get(matchId) ||
+                this.tournamentMatches.get(matchId);
 
             if (!match) {
-            console.warn(`⚠️ No active or tournament match found for matchId: ${matchId}`);
-            return;
+                console.warn(`⚠️ No active or tournament match found for matchId: ${matchId}`);
+                return;
             }
 
             const playerIds = [match.player1.playerId, match.player2.playerId];
             for (const playerId of playerIds) {
-            const ws = this.clients.get(playerId);
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify(message));
-                console.log(`📤 Sent '${message.type}' to ${playerId}`);
-            }
+                const ws = this.clients.get(playerId);
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify(message));
+                    console.log(`📤 Sent '${message.type}' to ${playerId}`);
+                }
             }
         } catch (err) {
             console.error('❌ broadcastToMatch error:', err);
@@ -666,9 +666,10 @@ class GameServer {
                         scores: { player1: matchResult.player1Score, player2: matchResult.player2Score }
                     });
                     
-                    // This message is informational from client - server already processed the match
-                    // We can use it for additional validation or logging
-                    console.log('✅ Match result acknowledged from client');
+                    // This message is informational from client - server is the source of truth
+                    // Server already processed the match and determined the winner
+                    // Client perspectives may differ due to player1/player2 role swapping
+                    console.log('✅ Match result acknowledged from client (informational only)');
                     
                 } catch (error) {
                     console.error('❌ Failed to process tournament match result:', error);
@@ -1243,7 +1244,17 @@ class GameServer {
                 // Update the decision in match data
                 const roundDecisions = changeMatch.decisions.get(data.roundNumber);
                 if (roundDecisions) {
-                    const isPlayer1 = changeMatch.player1.playerId === ws.clientId;
+                    // Check both direct clientId and tournament player ID mapping
+                    let isPlayer1 = changeMatch.player1.playerId === ws.clientId;
+                    
+                    // If not matched, check tournament player ID mapping
+                    if (!isPlayer1 && changeMatch.isTournamentMatch) {
+                        const tournamentPlayerId = this.clientIdToTournamentPlayerId.get(ws.clientId);
+                        if (tournamentPlayerId) {
+                            isPlayer1 = changeMatch.player1.playerId === tournamentPlayerId;
+                        }
+                    }
+                    
                     const oldDecision = isPlayer1 ? roundDecisions.player1Decision : roundDecisions.player2Decision;
 
                     if (isPlayer1) {
@@ -1256,7 +1267,10 @@ class GameServer {
                         round: data.roundNumber,
                         player: isPlayer1 ? 'player1' : 'player2',
                         oldDecision: oldDecision,
-                        newDecision: data.newDecision
+                        newDecision: data.newDecision,
+                        wsClientId: ws.clientId.substring(0, 20) + '...',
+                        matchPlayer1Id: changeMatch.player1.playerId,
+                        matchPlayer2Id: changeMatch.player2.playerId
                     });
 
                     // Recalculate scores for this round
@@ -1393,11 +1407,27 @@ class GameServer {
                 }
 
                 // Mark player as complete
-                const isPlayer1Complete = changesCompleteMatch.player1.playerId === ws.clientId;
+                // Try both direct client ID match and tournament player ID match
+                const clientId = ws.clientId;
+                const tournamentPlayerId = this.clientIdToTournamentPlayerId?.get(clientId);
+                
+                const isPlayer1Complete = (changesCompleteMatch.player1.playerId === clientId) || 
+                                         (tournamentPlayerId && changesCompleteMatch.player1.playerId === tournamentPlayerId);
+                
+                console.log('🔄 Determining which player completed:', {
+                    wsClientId: clientId,
+                    tournamentPlayerId: tournamentPlayerId,
+                    player1Id: changesCompleteMatch.player1.playerId,
+                    player2Id: changesCompleteMatch.player2.playerId,
+                    isPlayer1: isPlayer1Complete
+                });
+                
                 if (isPlayer1Complete) {
                     changesCompleteMatch.decisionChanges.player1Complete = true;
+                    console.log('✅ Player 1 marked as complete');
                 } else {
                     changesCompleteMatch.decisionChanges.player2Complete = true;
+                    console.log('✅ Player 2 marked as complete');
                 }
 
                 console.log('🔄 Decision changes completion status:', {
@@ -1652,6 +1682,14 @@ class GameServer {
                 if (!reversalMatch.reversalResponses) {
                     reversalMatch.reversalResponses = { player1: undefined, player2: undefined };
                 }
+                
+                // Check if both players already responded (duplicate message)
+                const p1Current = reversalMatch.reversalResponses.player1;
+                const p2Current = reversalMatch.reversalResponses.player2;
+                if (p1Current !== undefined && p2Current !== undefined) {
+                    console.log('⚠️ Both players already responded, ignoring duplicate');
+                    return;
+                }
 
                 const clientId = ws.clientId;
                 const tournamentPlayerId = this.clientIdToTournamentPlayerId?.get(clientId);
@@ -1696,19 +1734,107 @@ class GameServer {
 
                     if (p1 && p2) {
                         console.log('🔁 Both players accepted reversal. Triggering rematch...');
-                        this.broadcastToMatch(matchId, {
+                        
+                        // Clear reversal timeout
+                        if (reversalMatch.reversalTimeout) {
+                            clearTimeout(reversalMatch.reversalTimeout);
+                            reversalMatch.reversalTimeout = null;
+                            console.log('⏰ Reversal timeout cleared (approved)');
+                        }
+                        
+                        const reversalMessage = {
                             type: 'REVERSAL_APPROVED',
                             matchId,
-                        });
+                        };
+                        
+                        // Send directly to both players
+                        this.broadcastToClient(reversalMatch.player1.playerId, reversalMessage);
+                        this.broadcastToClient(reversalMatch.player2.playerId, reversalMessage);
+                        
+                        // Clear reversal responses for rematch
+                        reversalMatch.reversalResponses = {};
                     } else {
                         console.log('❌ At least one player declined reversal. Showing statistics...');
-                        this.broadcastToMatch(matchId, {
+                        
+                        // Clear reversal timeout
+                        if (reversalMatch.reversalTimeout) {
+                            clearTimeout(reversalMatch.reversalTimeout);
+                            reversalMatch.reversalTimeout = null;
+                            console.log('⏰ Reversal timeout cleared (declined)');
+                        }
+                        
+                        // Calculate winner
+                        const winner = reversalMatch.scores.player1 > reversalMatch.scores.player2 ? 'player1' :
+                            reversalMatch.scores.player2 > reversalMatch.scores.player1 ? 'player2' : 'tie';
+                        
+                        // Send personalized statistics to each player
+                        console.log('📤 Sending statistics to both players');
+                        
+                        // Player 1 perspective
+                        this.broadcastToClient(reversalMatch.player1.playerId, {
                             type: 'SHOW_STATISTICS',
                             matchId,
+                            yourScore: reversalMatch.scores.player1,
+                            opponentScore: reversalMatch.scores.player2,
+                            finalScores: reversalMatch.scores,
+                            totalRounds: reversalMatch.maxRounds,
+                            winner: winner,
+                            session: reversalMatch.session
                         });
+                        
+                        // Player 2 perspective
+                        this.broadcastToClient(reversalMatch.player2.playerId, {
+                            type: 'SHOW_STATISTICS',
+                            matchId,
+                            yourScore: reversalMatch.scores.player2,
+                            opponentScore: reversalMatch.scores.player1,
+                            finalScores: reversalMatch.scores,
+                            totalRounds: reversalMatch.maxRounds,
+                            winner: winner,
+                            session: reversalMatch.session
+                        });
+                        
+                        // Process tournament match result if this is a tournament match
+                        if (reversalMatch.tournamentId) {
+                            console.log('🏆 Processing tournament match result after reversal declined');
+                            
+                            let actualWinnerId = null;
+                            if (winner === 'player1') {
+                                actualWinnerId = reversalMatch.player1.playerId;
+                            } else if (winner === 'player2') {
+                                actualWinnerId = reversalMatch.player2.playerId;
+                            } else {
+                                actualWinnerId = 'tie';
+                            }
+                            
+                            this.processTournamentMatchResultWithMatch(reversalMatch, matchId, actualWinnerId);
+                        }
+                        
+                        // Save game results
+                        if (!reversalMatch.resultsSaved) {
+                            this.saveGameResults(reversalMatch, matchId, winner).catch(error => {
+                                console.error('❌ Error saving game results:', error);
+                            });
+                            reversalMatch.resultsSaved = true;
+                        }
+                        
+                        // Don't delete match yet - let clients view statistics first
+                        // Set a timeout to clean up match after statistics viewing
+                        console.log('✅ Statistics sent, match kept for viewing');
+                        
+                        setTimeout(() => {
+                            console.log('🧹 Cleaning up match after statistics viewing:', matchId);
+                            if (this.activeMatches) {
+                                this.activeMatches.delete(matchId);
+                            }
+                            if (this.tournamentMatches) {
+                                this.tournamentMatches.delete(matchId);
+                            }
+                        }, 30000); // 30 seconds to view statistics
+                        
+                        // Clear reversal responses
+                        reversalMatch.reversalResponses = {};
                     }
-
-                    reversalMatch.reversalResponses = {};
                 } else {
                     console.log('⏳ Waiting for the other player response...');
                 }
@@ -2133,6 +2259,15 @@ class GameServer {
                     ws.send(JSON.stringify({
                         type: 'ERROR',
                         message: 'Not enough players to start tournament (minimum 4 required)'
+                    }));
+                    return;
+                }
+                
+                // Only Single Elimination is supported in this version
+                if (tournamentFormat !== 'single_elimination') {
+                    ws.send(JSON.stringify({
+                        type: 'ERROR',
+                        message: 'Only Single Elimination format is supported in this version. Double Elimination and Round Robin coming soon!'
                     }));
                     return;
                 }
@@ -2578,8 +2713,33 @@ class GameServer {
             throw new Error('Lobby is full');
         }
 
+        // Check if player is already in this lobby
         if (lobby.participants.find(p => p.id === playerId)) {
             throw new Error('Already in lobby');
+        }
+
+        // Auto-leave from any other lobby before joining new one
+        for (const [otherLobbyCode, otherLobby] of this.partyLobbies.entries()) {
+            if (otherLobbyCode !== lobbyCode) {
+                const playerIndex = otherLobby.participants.findIndex(p => p.id === playerId);
+                if (playerIndex !== -1) {
+                    console.log('🎮 Auto-leaving player from previous lobby:', playerName, 'from', otherLobbyCode);
+                    otherLobby.participants.splice(playerIndex, 1);
+                    otherLobby.currentPlayerCount = otherLobby.participants.length;
+                    
+                    // Broadcast update to old lobby
+                    this.broadcastToLobby(otherLobbyCode, {
+                        type: 'LOBBY_UPDATED',
+                        lobby: otherLobby
+                    });
+                    
+                    // If old lobby is empty, delete it
+                    if (otherLobby.participants.length === 0) {
+                        console.log('🎮 Deleting empty lobby:', otherLobbyCode);
+                        this.partyLobbies.delete(otherLobbyCode);
+                    }
+                }
+            }
         }
 
         lobby.participants.push({
@@ -2757,79 +2917,77 @@ class GameServer {
 
     generateRoundRobinBracket(tournament, players, bracket) {
         // In round robin, every player plays every other player
-        // We'll generate matches in rounds to avoid too many simultaneous matches
+        // Using the Circle Method algorithm for optimal scheduling
         
         const totalPlayers = players.length;
-        const matchesPerRound = Math.floor(totalPlayers / 2);
+        const isOdd = totalPlayers % 2 !== 0;
         
-        // Generate all possible pairings
-        const allPairings = [];
-        for (let i = 0; i < totalPlayers; i++) {
-            for (let j = i + 1; j < totalPlayers; j++) {
-                allPairings.push([players[i], players[j]]);
-            }
+        // If odd number of players, add a dummy "bye" player
+        let playerList = [...players];
+        if (isOdd) {
+            playerList.push({ id: 'BYE', name: 'BYE', isBye: true });
         }
         
-        console.log('🏆 Round robin total pairings:', allPairings.length);
+        const n = playerList.length;
+        const totalRounds = n - 1;
+        const matchesPerRound = n / 2;
         
-        // Distribute pairings across rounds
-        let currentRound = 0;
-        let pairingIndex = 0;
+        console.log('🏆 Round robin setup:', {
+            totalPlayers: totalPlayers,
+            totalRounds: totalRounds,
+            matchesPerRound: matchesPerRound,
+            isOdd: isOdd
+        });
         
-        while (pairingIndex < allPairings.length) {
+        // Generate rounds using circle method
+        for (let round = 0; round < totalRounds; round++) {
             const roundMatches = [];
-            const usedPlayers = new Set();
             
-            // Add matches to this round (max matchesPerRound)
-            while (roundMatches.length < matchesPerRound && pairingIndex < allPairings.length) {
-                const [player1, player2] = allPairings[pairingIndex];
+            for (let match = 0; match < matchesPerRound; match++) {
+                let home, away;
                 
-                // Check if both players are available (not already in a match this round)
-                if (!usedPlayers.has(player1.id) && !usedPlayers.has(player2.id)) {
-                    const match = {
-                        id: `match_${tournament.id}_${currentRound}_${roundMatches.length}`,
-                        tournamentId: tournament.id,
-                        roundNumber: currentRound,
-                        player1Id: player1.id,
-                        player2Id: player2.id,
-                        status: 'scheduled',
-                        result: null,
-                        startTime: null,
-                        endTime: null
-                    };
-                    roundMatches.push(match);
-                    usedPlayers.add(player1.id);
-                    usedPlayers.add(player2.id);
-                    
-                    // Remove this pairing from the list
-                    allPairings.splice(pairingIndex, 1);
+                if (match === 0) {
+                    // First player stays fixed
+                    home = 0;
+                    away = round + 1;
                 } else {
-                    pairingIndex++;
+                    // Calculate positions using circle method
+                    home = (round + match) % (n - 1) + 1;
+                    away = (round + n - match) % (n - 1) + 1;
                 }
                 
-                // Prevent infinite loop
-                if (pairingIndex >= allPairings.length) break;
+                const player1 = playerList[home];
+                const player2 = playerList[away];
+                
+                // Skip matches with BYE player
+                if (player1.isBye || player2.isBye) {
+                    continue;
+                }
+                
+                const matchObj = {
+                    id: `match_${tournament.id}_${round}_${roundMatches.length}`,
+                    tournamentId: tournament.id,
+                    roundNumber: round,
+                    player1Id: player1.id,
+                    player2Id: player2.id,
+                    status: 'scheduled',
+                    result: null,
+                    startTime: null,
+                    endTime: null
+                };
+                
+                roundMatches.push(matchObj);
             }
             
             if (roundMatches.length > 0) {
                 bracket.rounds.push({
-                    roundNumber: currentRound,
+                    roundNumber: round,
                     matches: roundMatches,
                     status: 'not_started',
                     startTime: new Date()
                 });
                 
-                console.log(`🏆 Round robin round ${currentRound}: ${roundMatches.length} matches`);
-                currentRound++;
-            }
-            
-            // Reset for next round
-            pairingIndex = 0;
-            
-            // Safety check to prevent infinite loop
-            if (currentRound > totalPlayers * 2) {
-                console.error('❌ Round robin generation exceeded maximum rounds');
-                break;
+                console.log(`🏆 Round robin round ${round + 1}: ${roundMatches.length} matches`);
             }
         }
         
@@ -2908,8 +3066,8 @@ class GameServer {
                     }
                 }
                 
-                // Use lobby broadcast to ensure message reaches all participants
-                this.broadcastToLobby(tournament.lobbyId, {
+                // Send match ready message only to the two players in this match
+                const matchReadyMessage = {
                     type: 'TOURNAMENT_MATCH_READY',
                     matchId: matchId,
                     player1Id: match.player1Id,
@@ -2917,8 +3075,14 @@ class GameServer {
                     player1: player1,
                     player2: player2,
                     round: roundNumber + 1,
+                    maxRounds: activeMatch.maxRounds,
                     message: 'Turnuva maçınız başlıyor!'
-                });
+                };
+                
+                // Send to player1
+                this.broadcastToClient(match.player1Id, matchReadyMessage);
+                // Send to player2
+                this.broadcastToClient(match.player2Id, matchReadyMessage);
 
                 // Update match status
                 match.status = 'in_progress';
@@ -2984,6 +3148,14 @@ class GameServer {
             return;
         }
 
+        // Check for tie - only start tiebreaker for single elimination tournaments
+        if (winnerId === 'tie' && tournament.format === 'single_elimination') {
+            console.log('🤝 Single elimination tournament match tied, determining winner randomly');
+            // For ties after reversal, determine winner randomly (no more tiebreaker rounds)
+            winnerId = Math.random() < 0.5 ? match.player1.playerId : match.player2.playerId;
+            console.log('🎲 Random winner selected:', winnerId);
+        }
+
         // Update tournament match result
         const tournamentMatch = match.tournamentMatch;
         if (tournamentMatch) {
@@ -3007,6 +3179,124 @@ class GameServer {
                     console.log('🏆 Updated bracket match status:', bracketMatch.id, 'to completed');
                 }
             }
+        }
+
+        // Calculate cooperation/betrayal rates from match decisions
+        let player1Cooperations = 0;
+        let player1Betrayals = 0;
+        let player2Cooperations = 0;
+        let player2Betrayals = 0;
+        
+        for (const [roundNum, decisions] of match.decisions) {
+            if (decisions.player1Decision) {
+                if (decisions.player1Decision.toLowerCase() === 'cooperate') {
+                    player1Cooperations++;
+                } else {
+                    player1Betrayals++;
+                }
+            }
+            if (decisions.player2Decision) {
+                if (decisions.player2Decision.toLowerCase() === 'cooperate') {
+                    player2Cooperations++;
+                } else {
+                    player2Betrayals++;
+                }
+            }
+        }
+        
+        // Update player stats in tournament
+        const winner = tournament.players.find(p => p.id === winnerId);
+        const loser = tournament.players.find(p => p.id !== winnerId &&
+            (p.id === match.player1.playerId || p.id === match.player2.playerId));
+
+        if (winner && winnerId !== 'tie') {
+            winner.wins = (winner.wins || 0) + 1;
+            winner.score = (winner.score || 0) + match.scores[winnerId === match.player1.playerId ? 'player1' : 'player2'];
+            
+            // Update statistics
+            if (!winner.statistics) {
+                winner.statistics = {
+                    matchesPlayed: 0,
+                    matchesWon: 0,
+                    matchesLost: 0,
+                    totalPoints: 0,
+                    cooperationRate: 0,
+                    betrayalRate: 0,
+                    averageMatchScore: 0,
+                    tournamentPoints: 0
+                };
+            }
+            winner.statistics.matchesPlayed++;
+            winner.statistics.matchesWon++;
+            winner.statistics.totalPoints += match.scores[winnerId === match.player1.playerId ? 'player1' : 'player2'];
+            
+            // Update cooperation/betrayal rates
+            const isPlayer1 = winnerId === match.player1.playerId;
+            const cooperations = isPlayer1 ? player1Cooperations : player2Cooperations;
+            const betrayals = isPlayer1 ? player1Betrayals : player2Betrayals;
+            const totalDecisions = cooperations + betrayals;
+            
+            if (totalDecisions > 0) {
+                const prevCoopRate = winner.statistics.cooperationRate || 0;
+                const prevBetrayRate = winner.statistics.betrayalRate || 0;
+                const prevMatches = winner.statistics.matchesPlayed - 1;
+                
+                // Weighted average
+                winner.statistics.cooperationRate = (prevCoopRate * prevMatches + (cooperations / totalDecisions)) / winner.statistics.matchesPlayed;
+                winner.statistics.betrayalRate = (prevBetrayRate * prevMatches + (betrayals / totalDecisions)) / winner.statistics.matchesPlayed;
+            }
+            
+            console.log('🏆 Winner stats updated:', {
+                name: winner.name,
+                matchesWon: winner.statistics.matchesWon,
+                totalPoints: winner.statistics.totalPoints,
+                cooperationRate: Math.round(winner.statistics.cooperationRate * 100) + '%'
+            });
+        }
+        
+        if (loser && winnerId !== 'tie') {
+            loser.losses = (loser.losses || 0) + 1;
+            loser.score = (loser.score || 0) + match.scores[winnerId === match.player1.playerId ? 'player2' : 'player1'];
+            
+            // Update statistics
+            if (!loser.statistics) {
+                loser.statistics = {
+                    matchesPlayed: 0,
+                    matchesWon: 0,
+                    matchesLost: 0,
+                    totalPoints: 0,
+                    cooperationRate: 0,
+                    betrayalRate: 0,
+                    averageMatchScore: 0,
+                    tournamentPoints: 0
+                };
+            }
+            loser.statistics.matchesPlayed++;
+            loser.statistics.matchesLost++;
+            loser.statistics.totalPoints += match.scores[winnerId === match.player1.playerId ? 'player2' : 'player1'];
+            
+            // Update cooperation/betrayal rates
+            const isPlayer1 = loser.id === match.player1.playerId;
+            const cooperations = isPlayer1 ? player1Cooperations : player2Cooperations;
+            const betrayals = isPlayer1 ? player1Betrayals : player2Betrayals;
+            const totalDecisions = cooperations + betrayals;
+            
+            if (totalDecisions > 0) {
+                const prevCoopRate = loser.statistics.cooperationRate || 0;
+                const prevBetrayRate = loser.statistics.betrayalRate || 0;
+                const prevMatches = loser.statistics.matchesPlayed - 1;
+                
+                // Weighted average
+                loser.statistics.cooperationRate = (prevCoopRate * prevMatches + (cooperations / totalDecisions)) / loser.statistics.matchesPlayed;
+                loser.statistics.betrayalRate = (prevBetrayRate * prevMatches + (betrayals / totalDecisions)) / loser.statistics.matchesPlayed;
+            }
+            
+            console.log('🏆 Loser stats updated:', {
+                name: loser.name,
+                matchesLost: loser.statistics.matchesLost,
+                totalPoints: loser.statistics.totalPoints,
+                cooperationRate: Math.round(loser.statistics.cooperationRate * 100) + '%'
+            });
         }
 
         // Remove from active matches
@@ -3237,7 +3527,74 @@ class GameServer {
         if (allMatchesComplete) {
             console.log('🏆 Round completed, processing winners...');
             
-            // Advance winners to next round
+            // Check if this is Round Robin format
+            if (tournament.format === 'round_robin') {
+                // Check if all rounds are complete
+                const allRoundsComplete = tournament.bracket.rounds.every(r => 
+                    r.matches.every(m => m.status === 'completed')
+                );
+                
+                console.log('🏆 Round Robin completion check:', {
+                    format: tournament.format,
+                    currentRound: tournament.currentRound,
+                    totalRounds: tournament.bracket.rounds.length,
+                    allRoundsComplete: allRoundsComplete,
+                    roundsStatus: tournament.bracket.rounds.map(r => ({
+                        roundNumber: r.roundNumber,
+                        matches: r.matches.map(m => ({ id: m.id, status: m.status }))
+                    }))
+                });
+                
+                if (allRoundsComplete) {
+                    // Determine winner by highest score
+                    const sortedPlayers = [...tournament.players].sort((a, b) => {
+                        const scoreA = a.score || 0;
+                        const scoreB = b.score || 0;
+                        return scoreB - scoreA;
+                    });
+                    
+                    const winner = sortedPlayers[0];
+                    tournament.status = 'completed';
+                    tournament.winner = winner;
+                    
+                    console.log('🏆 Round Robin completed! Winner:', winner.name);
+                    console.log('🏆 Final standings:', sortedPlayers.map(p => ({ name: p.name, score: p.score || 0 })));
+                    
+                    this.broadcastToLobby(lobbyCode, {
+                        type: 'TOURNAMENT_COMPLETED',
+                        tournament: tournament,
+                        winner: winner,
+                        standings: sortedPlayers.map(p => ({
+                            player: p,
+                            score: p.score || 0,
+                            wins: p.wins || 0,
+                            losses: p.losses || 0
+                        })),
+                        message: `🏆 Turnuva tamamlandı! Kazanan: ${winner.name}`
+                    });
+                    return;
+                } else {
+                    // Start next round
+                    tournament.currentRound++;
+                    
+                    if (tournament.currentRound < tournament.bracket.rounds.length) {
+                        console.log('🏆 Starting Round Robin round', tournament.currentRound + 1);
+                        
+                        const activeMatches = this.startTournamentRound(tournament, tournament.currentRound);
+                        
+                        this.broadcastToLobby(lobbyCode, {
+                            type: 'TOURNAMENT_ROUND_STARTED',
+                            tournament: tournament,
+                            round: tournament.currentRound + 1,
+                            matches: activeMatches,
+                            message: `🎯 ${tournament.currentRound + 1}. tur başlıyor!`
+                        });
+                    }
+                    return;
+                }
+            }
+            
+            // Advance winners to next round (for elimination formats)
             const winners = bracketRoundData.matches.map(m => {
                 const winnerId = m.winner;
                 const winner = tournament.players.find(p => p.id === winnerId);
@@ -3638,6 +3995,11 @@ class GameServer {
             p1Points = 1; p2Points = 1;
         }
 
+        // Store round scores in decisions map for decision reversal
+        roundDecisions.player1Score = p1Points;
+        roundDecisions.player2Score = p2Points;
+        match.decisions.set(match.currentRound, roundDecisions);
+        
         match.scores.player1 += p1Points;
         match.scores.player2 += p2Points;
         match.gameState = 'SHOWING_RESULTS';
@@ -3656,6 +4018,7 @@ class GameServer {
         const roundResult = {
             type: 'ROUND_RESULT',
             round: match.currentRound,
+            matchId: matchId,
             isGameOver: match.currentRound >= match.maxRounds - 1
         };
 
@@ -3718,12 +4081,14 @@ class GameServer {
         this.broadcastToClient(match.player1.playerId, {
             type: 'NEW_ROUND',
             round: match.currentRound,
+            matchId: matchId,
             timerDuration: 30
         });
 
         this.broadcastToClient(match.player2.playerId, {
             type: 'NEW_ROUND',
             round: match.currentRound,
+            matchId: matchId,
             timerDuration: 30
         });
     }
@@ -3736,6 +4101,7 @@ class GameServer {
 
         const gameResult = {
             type: 'GAME_OVER',
+            matchId: matchId,
             winner: winner,
             finalScores: match.scores,
             totalRounds: match.maxRounds
@@ -3755,8 +4121,9 @@ class GameServer {
         }
 
         // Set up reversal timeout - shorter for tournament matches
-        const timeoutDuration = match.tournamentId ? 5000 : 60000; // 5s for tournament, 60s for regular
+        const timeoutDuration = match.tournamentId ? 30000 : 60000; // 30s for tournament, 60s for regular
         match.reversalTimeout = setTimeout(() => {
+            console.log('🔄 Reversal timeout triggered for match:', matchId);
             console.log('🔄 Reversal timeout reached, auto-rejecting for both players:', matchId);
 
             const timeoutMatch = this.activeMatches.get(matchId);
@@ -3766,8 +4133,11 @@ class GameServer {
             const winner = timeoutMatch.scores.player1 > timeoutMatch.scores.player2 ? 'player1' :
                 timeoutMatch.scores.player2 > timeoutMatch.scores.player1 ? 'player2' : 'tie';
 
+            // Player 1 perspective
             this.broadcastToClient(timeoutMatch.player1.playerId, {
                 type: 'SHOW_STATISTICS',
+                yourScore: timeoutMatch.scores.player1,
+                opponentScore: timeoutMatch.scores.player2,
                 finalScores: timeoutMatch.scores,
                 totalRounds: timeoutMatch.maxRounds,
                 winner: winner,
@@ -3775,8 +4145,11 @@ class GameServer {
                 session: timeoutMatch.session
             });
 
+            // Player 2 perspective
             this.broadcastToClient(timeoutMatch.player2.playerId, {
                 type: 'SHOW_STATISTICS',
+                yourScore: timeoutMatch.scores.player2,
+                opponentScore: timeoutMatch.scores.player1,
                 finalScores: timeoutMatch.scores,
                 totalRounds: timeoutMatch.maxRounds,
                 winner: winner,
@@ -3809,7 +4182,6 @@ class GameServer {
                 // Call with match object, matchId, and winnerId
                 this.processTournamentMatchResultWithMatch(timeoutMatch, matchId, actualWinnerId);
             }
-
             // Save game results to database (if not already saved)
             if (!timeoutMatch.resultsSaved) {
                 this.saveGameResults(timeoutMatch, matchId, winner).catch(error => {
@@ -3821,7 +4193,7 @@ class GameServer {
             // Clean up match
             console.log('🔄 Cleaning up timeout match:', matchId);
             this.activeMatches.delete(matchId);
-        }, 60000); // 60 seconds timeout
+        }, timeoutDuration); // Use the calculated timeout duration
 
         // Don't delete match immediately - keep it for reversal responses
         // this.activeMatches.delete(matchId); // Commented out
@@ -4158,9 +4530,18 @@ class GameServer {
         let newPlayer1Total = 0;
         let newPlayer2Total = 0;
 
+        console.log('🔄 Recalculating total from all rounds:', {
+            totalRoundsInMap: match.decisions.size,
+            rounds: Array.from(match.decisions.keys())
+        });
+
         for (let [round, decisions] of match.decisions) {
-            newPlayer1Total += decisions.player1Score || 0;
-            newPlayer2Total += decisions.player2Score || 0;
+            const p1Score = decisions.player1Score || 0;
+            const p2Score = decisions.player2Score || 0;
+            newPlayer1Total += p1Score;
+            newPlayer2Total += p2Score;
+            
+            console.log(`  Round ${round}: P1=${p1Score}, P2=${p2Score}, Running Total: P1=${newPlayer1Total}, P2=${newPlayer2Total}`);
         }
 
         // Update match scores
@@ -4169,7 +4550,8 @@ class GameServer {
 
         console.log('🔄 Updated total scores:', {
             player1Total: newPlayer1Total,
-            player2Total: newPlayer2Total
+            player2Total: newPlayer2Total,
+            totalRoundsCounted: match.decisions.size
         });
 
         // Note: Scores are calculated but not broadcast immediately
@@ -4225,8 +4607,17 @@ class GameServer {
         });
 
         // Calculate final winner
-        const finalWinner = match.scores.player1 > match.scores.player2 ? 'player1' :
+        let finalWinner = match.scores.player1 > match.scores.player2 ? 'player1' :
             match.scores.player2 > match.scores.player1 ? 'player2' : 'tie';
+        
+        // For single elimination tournaments, ties are not allowed - determine winner randomly
+        if (finalWinner === 'tie' && match.tournamentId) {
+            const tournament = this.activeTournaments.get(match.tournamentId);
+            if (tournament && tournament.format === 'single_elimination') {
+                finalWinner = Math.random() < 0.5 ? 'player1' : 'player2';
+                console.log('🎲 Single elimination tie resolved randomly:', finalWinner);
+            }
+        }
 
         // Prepare updated session data with player IDs
         const updatedDecisions = {};
@@ -4245,16 +4636,22 @@ class GameServer {
 
         console.log('📊 Sending updated decisions to clients:', updatedDecisions);
 
+        // Player 1 perspective
         this.broadcastToClient(match.player1.playerId, {
             type: 'SHOW_STATISTICS',
+            yourScore: match.scores.player1,
+            opponentScore: match.scores.player2,
             finalScores: match.scores,
             totalRounds: match.maxRounds,
             winner: finalWinner,
             updatedDecisions: updatedDecisions
         });
 
+        // Player 2 perspective
         this.broadcastToClient(match.player2.playerId, {
             type: 'SHOW_STATISTICS',
+            yourScore: match.scores.player2,
+            opponentScore: match.scores.player1,
             finalScores: match.scores,
             totalRounds: match.maxRounds,
             winner: finalWinner,
@@ -4277,6 +4674,31 @@ class GameServer {
             }
         }
 
+        // Process tournament match result if this is a tournament match
+        console.log('🔍 Checking if tournament match:', {
+            hasTournamentId: !!match.tournamentId,
+            tournamentId: match.tournamentId,
+            isTournamentMatch: match.isTournamentMatch,
+            matchId: matchId
+        });
+        
+        if (match.tournamentId) {
+            console.log('🏆 Processing tournament match result after reversal completed');
+            
+            let actualWinnerId = null;
+            if (finalWinner === 'player1') {
+                actualWinnerId = match.player1.playerId;
+            } else if (finalWinner === 'player2') {
+                actualWinnerId = match.player2.playerId;
+            } else {
+                actualWinnerId = 'tie';
+            }
+            
+            this.processTournamentMatchResultWithMatch(match, matchId, actualWinnerId);
+        } else {
+            console.log('⚠️ Not a tournament match, skipping tournament result processing');
+        }
+
         // Clean up
         if (match.reversalTimeout) {
             clearTimeout(match.reversalTimeout);
@@ -4284,7 +4706,11 @@ class GameServer {
         if (match.completionTimeout) {
             clearTimeout(match.completionTimeout);
         }
-        this.activeMatches.delete(matchId);
+        
+        // Don't delete match here if it's a tournament match - processTournamentMatchResultWithMatch will handle it
+        if (!match.tournamentId) {
+            this.activeMatches.delete(matchId);
+        }
     }
 
     broadcastToClient(clientId, message) {
@@ -4505,6 +4931,26 @@ class GameServer {
 
                 console.log('🏆 Tournament completed! Winner:', winner.name);
 
+                // Set final rankings
+                winner.currentRank = 1;
+                winner.status = 'winner';
+                
+                // Set ranks for other players based on when they were eliminated
+                const eliminatedPlayers = tournament.players.filter(p => p.id !== winner.id);
+                eliminatedPlayers.sort((a, b) => {
+                    // Players eliminated later get better ranks
+                    const aWins = a.statistics?.matchesWon || 0;
+                    const bWins = b.statistics?.matchesWon || 0;
+                    return bWins - aWins; // More wins = better rank
+                });
+                
+                eliminatedPlayers.forEach((player, index) => {
+                    player.currentRank = index + 2; // Start from rank 2
+                    player.status = 'eliminated';
+                });
+
+                console.log('🏆 Final rankings:', tournament.players.map(p => ({ name: p.name, rank: p.currentRank })));
+
                 // Broadcast tournament completion
                 this.broadcastToLobby(tournament.lobbyId, {
                     type: 'TOURNAMENT_COMPLETED',
@@ -4525,23 +4971,27 @@ class GameServer {
                     this.generateNextRoundMatches(tournament, currentRoundIndex);
                 }
 
-                // Start next round
-                console.log('🏆 Starting next round matches...');
-                const activeMatches = this.startTournamentRound(tournament, tournament.currentRound - 1);
-                console.log('🏆 Next round active matches created:', activeMatches ? activeMatches.length : 0);
-                
-                // Get bracket matches (without circular references)
-                const nextRoundIndex = tournament.currentRound - 1;
-                const bracketMatches = tournament.bracket.rounds[nextRoundIndex]?.matches || [];
-                
-                // Broadcast round started
-                this.broadcastToLobby(tournament.lobbyId, {
-                    type: 'TOURNAMENT_ROUND_STARTED',
-                    tournament: tournament,
-                    round: tournament.currentRound,
-                    matches: bracketMatches, // Use bracket matches instead of active matches
-                    message: `🎯 ${tournament.currentRound}. tur başladı!`
-                });
+                // Wait 10 seconds before starting next round to allow players to view statistics
+                console.log('⏳ Waiting 10 seconds before starting next round...');
+                setTimeout(() => {
+                    // Start next round
+                    console.log('🏆 Starting next round matches...');
+                    const activeMatches = this.startTournamentRound(tournament, tournament.currentRound - 1);
+                    console.log('🏆 Next round active matches created:', activeMatches ? activeMatches.length : 0);
+                    
+                    // Get bracket matches (without circular references)
+                    const nextRoundIndex = tournament.currentRound - 1;
+                    const bracketMatches = tournament.bracket.rounds[nextRoundIndex]?.matches || [];
+                    
+                    // Broadcast round started
+                    this.broadcastToLobby(tournament.lobbyId, {
+                        type: 'TOURNAMENT_ROUND_STARTED',
+                        tournament: tournament,
+                        round: tournament.currentRound,
+                        matches: bracketMatches, // Use bracket matches instead of active matches
+                        message: `🎯 ${tournament.currentRound}. tur başladı!`
+                    });
+                }, 10000); // 10 second delay
             }
         }
     }

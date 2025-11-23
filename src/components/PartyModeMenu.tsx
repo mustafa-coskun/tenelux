@@ -291,12 +291,13 @@ const PartyModeMenu: React.FC<PartyModeMenuProps> = ({
                 <option value={TournamentFormat.SINGLE_ELIMINATION}>
                   {t('tournament.singleElimination')}
                 </option>
-                <option value={TournamentFormat.DOUBLE_ELIMINATION}>
+                {/* Coming in next version */}
+                {/* <option value={TournamentFormat.DOUBLE_ELIMINATION}>
                   {t('tournament.doubleElimination')}
                 </option>
                 <option value={TournamentFormat.ROUND_ROBIN}>
                   {t('tournament.roundRobin')}
-                </option>
+                </option> */}
               </select>
             </div>
 

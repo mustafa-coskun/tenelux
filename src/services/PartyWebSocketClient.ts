@@ -41,11 +41,17 @@ export class PartyWebSocketClient extends BaseWebSocketClient {
   
   // Game handlers (for tournament matches)
   private onRoundResultHandler: ((result: any) => void) | null = null;
-  private onNewRoundHandler: ((round: number, timerDuration?: number) => void) | null = null;
+  private onNewRoundHandler: ((round: number, timerDuration?: number, matchId?: string) => void) | null = null;
   private onOpponentDecisionHandler: ((decision: string, round: number) => void) | null = null;
   private onOpponentMessageHandler: ((message: string, timestamp: number) => void) | null = null;
   private onGameOverHandler: ((data: any) => void) | null = null;
   private onShowStatisticsHandler: ((data: any) => void) | null = null;
+  private onReversalApprovedHandler: ((data: any) => void) | null = null;
+  private onReversalResponseReceivedHandler: (() => void) | null = null;
+  private onReversalRejectedHandler: ((message: string) => void) | null = null;
+  private onReversalSelectionPhaseHandler: ((message: string) => void) | null = null;
+  private onDecisionChangedHandler: ((data: any) => void) | null = null;
+  private onFinalScoresUpdateHandler: ((data: any) => void) | null = null;
 
   constructor() {
     super();
@@ -244,17 +250,10 @@ export class PartyWebSocketClient extends BaseWebSocketClient {
         break;
 
       case 'NEW_ROUND':
-        console.log('🎮 Party Client - New round:', message.round);
+        console.log('🎮 Party Client - New round:', message.round, 'MatchId:', message.matchId);
         if (this.onNewRoundHandler) {
-          this.onNewRoundHandler(message.round, message.timerDuration);
+          this.onNewRoundHandler(message.round, message.timerDuration, message.matchId);
         }
-        break;
-
-      case 'SHOW_STATISTICS':
-        console.log('📊 Party Client - Show statistics:', message);
-        // This message is sent after game ends in tournament matches
-        // Statistics are already shown by the game component
-        // Just log it for now
         break;
 
       case 'OPPONENT_DECISION':
@@ -282,6 +281,53 @@ export class PartyWebSocketClient extends BaseWebSocketClient {
         console.log('📊 Party Client - Show statistics');
         if (this.onShowStatisticsHandler) {
           this.onShowStatisticsHandler(message);
+        }
+        break;
+
+      case 'REVERSAL_APPROVED':
+        console.log('🔁 Party Client - Reversal approved, both players accepted');
+        // Both players accepted reversal - trigger round selection UI
+        if (this.onReversalApprovedHandler) {
+          this.onReversalApprovedHandler(message);
+        }
+        break;
+
+      case 'REVERSAL_RESPONSE_RECEIVED':
+        if (this.onReversalResponseReceivedHandler) {
+          this.onReversalResponseReceivedHandler();
+        }
+        break;
+
+      case 'REVERSAL_REJECTED':
+        if (this.onReversalRejectedHandler) {
+          this.onReversalRejectedHandler(message.message);
+        }
+        break;
+
+      case 'REVERSAL_SELECTION_PHASE':
+        if (this.onReversalSelectionPhaseHandler) {
+          this.onReversalSelectionPhaseHandler(message.message);
+        }
+        break;
+
+      case 'REVERSAL_ERROR':
+        console.log('❌ Party Client - Reversal error:', message.message);
+        if (this.onReversalRejectedHandler) {
+          this.onReversalRejectedHandler(message.message);
+        }
+        break;
+
+      case 'DECISION_CHANGED':
+        console.log('🔄 Party Client - Decision changed:', message);
+        if (this.onDecisionChangedHandler) {
+          this.onDecisionChangedHandler(message);
+        }
+        break;
+
+      case 'FINAL_SCORES_UPDATE':
+        console.log('📊 Party Client - Final scores updated:', message);
+        if (this.onFinalScoresUpdateHandler) {
+          this.onFinalScoresUpdateHandler(message);
         }
         break;
 
@@ -362,6 +408,49 @@ export class PartyWebSocketClient extends BaseWebSocketClient {
       tournamentId,
       playerId: this.playerId,
       timestamp: Date.now(),
+    });
+  }
+
+  /**
+   * Decision reversal methods
+   */
+  sendDecisionReversalResponse(matchId: string, accept: boolean): void {
+    console.log('📤 Party Client - Sending decision reversal response:', {
+      matchId: matchId,
+      accept: accept,
+      timestamp: new Date().toISOString()
+    });
+
+    this.send({
+      type: 'DECISION_REVERSAL_RESPONSE',
+      matchId: matchId,
+      accept: accept,
+    });
+  }
+
+  sendDecisionChangeRequest(matchId: string, roundNumber: number, newDecision: string): void {
+    console.log('📤 Party Client - Sending decision change request:', {
+      matchId: matchId,
+      roundNumber: roundNumber,
+      newDecision: newDecision
+    });
+
+    this.send({
+      type: 'DECISION_CHANGE_REQUEST',
+      matchId: matchId,
+      roundNumber: roundNumber,
+      newDecision: newDecision,
+    });
+  }
+
+  sendDecisionChangesComplete(matchId: string): void {
+    console.log('📤 Party Client - Sending decision changes complete:', {
+      matchId: matchId
+    });
+
+    this.send({
+      type: 'DECISION_CHANGES_COMPLETE',
+      matchId: matchId,
     });
   }
 
@@ -449,7 +538,7 @@ export class PartyWebSocketClient extends BaseWebSocketClient {
     this.onRoundResultHandler = handler;
   }
 
-  onNewRound(handler: (round: number, timerDuration?: number) => void) {
+  onNewRound(handler: (round: number, timerDuration?: number, matchId?: string) => void) {
     this.onNewRoundHandler = handler;
   }
 
@@ -467,6 +556,30 @@ export class PartyWebSocketClient extends BaseWebSocketClient {
 
   onShowStatistics(handler: (data: any) => void) {
     this.onShowStatisticsHandler = handler;
+  }
+
+  onReversalApproved(handler: (data: any) => void) {
+    this.onReversalApprovedHandler = handler;
+  }
+
+  onReversalResponseReceived(handler: () => void): void {
+    this.onReversalResponseReceivedHandler = handler;
+  }
+
+  onReversalRejected(handler: (message: string) => void): void {
+    this.onReversalRejectedHandler = handler;
+  }
+
+  onReversalSelectionPhase(handler: (message: string) => void): void {
+    this.onReversalSelectionPhaseHandler = handler;
+  }
+
+  onDecisionChanged(handler: (data: any) => void): void {
+    this.onDecisionChangedHandler = handler;
+  }
+
+  onFinalScoresUpdate(handler: (data: any) => void): void {
+    this.onFinalScoresUpdateHandler = handler;
   }
 
   // Game action methods (for tournament matches)

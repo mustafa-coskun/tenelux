@@ -6,7 +6,7 @@
   color: #ffffff;
   font-family: 'Courier New', monospace;
   position: relative;
-  overflow: hidden;
+  /* overflow: hidden; */
   display: flex;
   flex-direction: column;
 }
@@ -19,7 +19,7 @@
   height: 100%;
   text-align: center;
   padding: 2rem;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 .multiplayer-status h2 {

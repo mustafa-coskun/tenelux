@@ -179,6 +179,14 @@ export class WebSocketGameClient extends BaseWebSocketClient {
         }
         break;
 
+      case 'REVERSAL_APPROVED':
+        console.log('🔁 Multiplayer Client - Reversal approved, both players accepted');
+        if (this.onReversalSelectionPhaseHandler) {
+          // Trigger round selection phase
+          this.onReversalSelectionPhaseHandler('Both players accepted. Select a round to change.');
+        }
+        break;
+
       case 'DECISION_CHANGED':
         console.log('✅ Multiplayer Client - Decision changed successfully:', message);
         if (this.onDecisionChangedHandler) {

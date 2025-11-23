@@ -7,7 +7,7 @@
   color: #ffffff;
   font-family: 'Courier New', monospace;
   position: relative;
-  overflow: hidden;
+  /* overflow: hidden; */
   display: flex;
   flex-direction: column;
 }
@@ -20,7 +20,7 @@
   height: 100%;
   text-align: center;
   padding: 2rem;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 .tournament-match-loading h2 {
@@ -141,7 +141,7 @@
   flex-direction: column;
   position: relative;
   background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 .tournament-continue {
@@ -222,7 +222,7 @@
   justify-content: center;
   background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
   padding: 20px;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 .reversal-card {
@@ -251,9 +251,16 @@
 .reversal-card h2 {
   color: #ff6b6b;
   font-size: 2rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   text-align: center;
   text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+}
+
+.reversal-card h3 {
+  color: #fff;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
 .reversal-card p {
@@ -264,88 +271,215 @@
   line-height: 1.6;
 }
 
-.reversal-note {
-  color: #ff9800;
-  font-weight: 600;
-  font-size: 1em !important;
-}
-
-.reversal-timer {
-  background: rgba(255, 193, 7, 0.1);
-  border: 2px solid rgba(255, 193, 7, 0.3);
-  border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 20px;
+/* Timer Banner */
+.reversal-timer-banner {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.2));
+  border: 2px solid rgba(255, 193, 7, 0.4);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
   animation: pulse-warning 2s ease-in-out infinite;
 }
 
 @keyframes pulse-warning {
   0%, 100% {
-    border-color: rgba(255, 193, 7, 0.3);
-    background: rgba(255, 193, 7, 0.1);
+    border-color: rgba(255, 193, 7, 0.4);
+    box-shadow: 0 0 0 rgba(255, 193, 7, 0.4);
   }
   50% {
-    border-color: rgba(255, 193, 7, 0.5);
-    background: rgba(255, 193, 7, 0.15);
+    border-color: rgba(255, 193, 7, 0.6);
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
   }
 }
 
-.reversal-timer p {
-  color: #ff9800;
+.timer-icon {
+  font-size: 1.5rem;
+}
+
+.timer-text {
+  color: #ffc107;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.timer-text strong {
+  font-size: 1.3rem;
   font-weight: bold;
-  font-size: 1.2em;
-  margin: 0;
+  color: #fff;
+}
+
+/* Reversal Content */
+.reversal-content {
+  margin-bottom: 2rem;
+}
+
+.reversal-icon {
+  font-size: 4rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.reversal-question {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 1.5rem;
+}
+
+.reversal-note {
+  background: rgba(33, 150, 243, 0.1);
+  border-left: 4px solid #2196f3;
+  padding: 1rem;
+  border-radius: 8px;
+  color: #90caf9;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  text-align: left;
+}
+
+.note-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* Waiting State */
+.waiting-for-opponent {
+  text-align: center;
+  padding: 2rem;
+}
+
+.waiting-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.waiting-for-opponent h3 {
+  color: #4caf50;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.waiting-for-opponent p {
+  color: #e0e0e0;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.waiting-note {
+  color: #90caf9;
+  font-size: 0.95rem;
+  margin-top: 1.5rem;
 }
 
 .reversal-buttons {
   display: flex;
-  gap: 1.5rem;
-  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
   margin-top: 2rem;
 }
 
 .reversal-btn {
-  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 1.2rem 2rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-width: 120px;
-  font-family: 'Courier New', monospace;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.reversal-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.reversal-btn:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 .reversal-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
+}
+
+.reversal-btn:disabled::before {
+  display: none;
+}
+
+.btn-icon {
+  font-size: 1.5rem;
+  z-index: 1;
+}
+
+.btn-text {
+  z-index: 1;
 }
 
 .decline-btn {
-  background: rgba(255, 107, 107, 0.2);
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.2), rgba(211, 47, 47, 0.2));
   color: #ff6b6b;
-  border: 2px solid rgba(255, 107, 107, 0.5);
+  border: 2px solid rgba(244, 67, 54, 0.5);
 }
 
 .decline-btn:hover:not(:disabled) {
-  background: rgba(255, 107, 107, 0.3);
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.3), rgba(211, 47, 47, 0.3));
+  border-color: rgba(244, 67, 54, 0.7);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
 }
 
 .accept-btn {
-  background: rgba(76, 175, 80, 0.2);
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(56, 142, 60, 0.2));
   color: #4caf50;
   border: 2px solid rgba(76, 175, 80, 0.5);
 }
 
 .accept-btn:hover:not(:disabled) {
-  background: rgba(76, 175, 80, 0.3);
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.3), rgba(56, 142, 60, 0.3));
+  border-color: rgba(76, 175, 80, 0.7);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
 }
 
 .waiting-for-opponent {
@@ -670,5 +804,324 @@
 
   .round-btn:hover {
     transform: translateY(-3px);
+  }
+}
+
+/* Round Selection - Simple Style */
+.round-selection {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 2rem;
+  margin-top: 1.5rem;
+}
+
+.rounds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.round-btn {
+  padding: 1.2rem;
+  border: 2px solid #ff6b6b;
+  border-radius: 10px;
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.round-btn:hover {
+  background: rgba(255, 107, 107, 0.3);
+  border-color: #ff6b6b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+.selection-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.cancel-selection-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-selection-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+/* Decision buttons - shared with reversal screen */
+.decision-buttons {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.decision-btn {
+  padding: 1.5rem 3rem;
+  border: 2px solid;
+  border-radius: 12px;
+  background: transparent;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.stay-silent-btn {
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.stay-silent-btn:hover {
+  background: rgba(76, 175, 80, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.confess-btn {
+  border-color: #f44336;
+  color: #f44336;
+}
+
+.confess-btn:hover {
+  background: rgba(244, 67, 54, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+}
+
+.change-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.back-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .rounds-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+
+  .round-btn {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .decision-buttons {
+    flex-direction: column;
+  }
+
+  .btn-icon {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .rounds-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Statistics Timeout Banner */
+.statistics-timeout-banner {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 152, 0, 0.95);
+  color: #fff;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  animation: slideDown 0.3s ease-out;
+}
+
+.statistics-timeout-banner p {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Tournament Continue Button */
+.tournament-continue {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.continue-tournament-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+.continue-tournament-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.continue-tournament-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .statistics-timeout-banner {
+    top: 10px;
+    padding: 0.8rem 1.5rem;
+  }
+
+  .statistics-timeout-banner p {
+    font-size: 0.9rem;
+  }
+
+  .continue-tournament-btn {
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+  }
+}
+
+/* Mobile Responsive for Decision Reversal */
+@media (max-width: 768px) {
+  .reversal-card {
+    padding: 1.5rem;
+    max-width: 95%;
+  }
+
+  .reversal-card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .reversal-card h3 {
+    font-size: 1.2rem;
+  }
+
+  .reversal-card p {
+    font-size: 1rem;
+  }
+
+  .reversal-icon {
+    font-size: 3rem;
+  }
+
+  .reversal-timer-banner {
+    padding: 0.8rem 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .timer-icon {
+    font-size: 1.2rem;
+  }
+
+  .timer-text {
+    font-size: 1rem;
+  }
+
+  .timer-text strong {
+    font-size: 1.1rem;
+  }
+
+  .reversal-question {
+    font-size: 1.1rem;
+  }
+
+  .reversal-note {
+    font-size: 0.85rem;
+    padding: 0.8rem;
+  }
+
+  .reversal-btn {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .btn-icon {
+    font-size: 1.3rem;
+  }
+
+  .waiting-icon {
+    font-size: 3rem;
+  }
+
+  .waiting-for-opponent h3 {
+    font-size: 1.2rem;
+  }
+
+  .waiting-for-opponent p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .reversal-card {
+    padding: 1rem;
+  }
+
+  .reversal-card h2 {
+    font-size: 1.3rem;
+  }
+
+  .reversal-icon {
+    font-size: 2.5rem;
+  }
+
+  .reversal-btn {
+    padding: 0.9rem 1.2rem;
+    font-size: 0.95rem;
   }
 }

@@ -14,6 +14,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
   onCommunication,
   messages = [],
   timerSync,
+  disableReversalTimer = true,
 }) => {
   const { t } = useTranslation();
   const { isMobile, isTablet } = useViewportSize();
@@ -239,7 +240,10 @@ const GameBoard: React.FC<GameBoardProps> = ({
     if (isDecisionPhase && !hasPlayerDecided) {
       setHasPlayerDecided(true);
       setCurrentDecision(decision);
-      setReversalTimer(5); // 5 seconds to reverse decision
+      // Only enable reversal timer if not disabled (e.g., in tournament matches)
+      if (!disableReversalTimer) {
+        setReversalTimer(5); // 5 seconds to reverse decision
+      }
       // Keep timer running until round result comes
 
       // Trigger decision moment effect
