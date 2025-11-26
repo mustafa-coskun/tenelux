@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  tenelux:
+    build: .
+    container_name: tenelux-game
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    networks:
+      - tenelux-network
+
+networks:
+  tenelux-network:
+    driver: bridge

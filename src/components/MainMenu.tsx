@@ -8,6 +8,8 @@ import { BackgroundEffects } from './BackgroundEffects';
 import { ProfileScreen } from './ProfileScreen';
 import { ConnectionDebug } from './ConnectionDebug';
 import { getEnvironmentService } from '../config/environment';
+import { AdBanner } from './AdBanner';
+import { AdPlacement } from '../services/AdService';
 import teneluxLongBg from '../assets/tenelux_long.png';
 import teneluxWideBg from '../assets/tenelux_wide.png';
 // import { MultiplayerTestPanel } from './MultiplayerTestPanel';
@@ -263,6 +265,11 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             <li>{t('mainMenu.rule4')}</li>
             <li>{t('mainMenu.rule5')}</li>
           </ul>
+        </div>
+
+        {/* Advertisement */}
+        <div className="main-menu-ad">
+          <AdBanner placement={AdPlacement.MAIN_MENU} />
         </div>
       </main>
 

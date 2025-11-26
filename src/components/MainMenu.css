@@ -1038,3 +1038,20 @@ fo */
     font-size: 0.75rem;
   }
 }
+
+
+/* Advertisement Section */
+.main-menu-ad {
+  margin: 30px auto;
+  max-width: 728px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .main-menu-ad {
+    margin: 20px 10px;
+    max-width: 100%;
+  }
+}

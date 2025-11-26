@@ -690,3 +690,22 @@
     grid-column: 1 / -1;
   }
 }
+
+
+/* Advertisement Section */
+.statistics-ad {
+  margin: 20px auto;
+  padding: 15px;
+  max-width: 728px;
+  display: flex;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .statistics-ad {
+    margin: 15px 10px;
+    padding: 10px;
+  }
+}

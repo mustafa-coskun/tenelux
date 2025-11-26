@@ -1,0 +1,92 @@
+.rewarded-ad-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.rewarded-ad-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.rewarded-ad-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.rewarded-ad-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.rewarded-ad-button.loading {
+  background: linear-gradient(135deg, #888 0%, #666 100%);
+}
+
+.rewarded-ad-button.watched {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.button-icon {
+  font-size: 18px;
+  animation: pulse 2s infinite;
+}
+
+.button-text {
+  font-size: 14px;
+}
+
+.button-reward {
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Loading animation */
+.rewarded-ad-button.loading .button-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .rewarded-ad-button {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+  
+  .button-icon {
+    font-size: 16px;
+  }
+}

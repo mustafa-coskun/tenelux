@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useViewportSize } from '../hooks';
 import { getSyncService } from '../services/SyncService';
+import { AdBanner } from './AdBanner';
+import { AdPlacement } from '../services/AdService';
 import {
   PartyLobby as IPartyLobby,
   PartySettings,
@@ -693,12 +695,18 @@ const PartyLobby: React.FC<PartyLobbyProps> = ({
 
       {/* Tournament Status Messages */}
       {lobby.status === LobbyStatus.WAITING_FOR_PLAYERS && (
-        <div className="status-message waiting">
-          {t('party.waitingForPlayers', {
-            current: lobby.currentPlayerCount,
-            minimum: 4
-          })}
-        </div>
+        <>
+          <div className="status-message waiting">
+            {t('party.waitingForPlayers', {
+              current: lobby.currentPlayerCount,
+              minimum: 4
+            })}
+          </div>
+          {/* Advertisement while waiting */}
+          <div className="lobby-ad">
+            <AdBanner placement={AdPlacement.LOBBY_WAITING} />
+          </div>
+        </>
       )}
 
       {lobby.status === LobbyStatus.READY_TO_START && !isHost && (

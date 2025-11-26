@@ -3,6 +3,8 @@ import { StatisticsPanelProps, Decision } from '../types';
 import { StatisticsEngine } from '../services/StatisticsEngine';
 import { useTranslation } from '../hooks/useTranslation';
 import { useViewportSize } from '../hooks';
+import { AdBanner } from './AdBanner';
+import { AdPlacement } from '../services/AdService';
 import './StatisticsPanel.css';
 
 // StatisticsPanel component for displaying post-game statistics
@@ -394,6 +396,11 @@ const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
             </div>
           )}
         </div>
+      </div>
+
+      {/* Advertisement - Game End */}
+      <div className="statistics-ad">
+        <AdBanner placement={AdPlacement.STATISTICS_PANEL} />
       </div>
 
     </div>

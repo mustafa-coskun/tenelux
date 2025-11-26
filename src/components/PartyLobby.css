@@ -1230,3 +1230,18 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+
+/* Advertisement Section */
+.lobby-ad {
+  margin: 20px auto;
+  max-width: 728px;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .lobby-ad {
+    margin: 15px 10px;
+  }
+}
