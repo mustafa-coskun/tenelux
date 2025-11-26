@@ -72,7 +72,7 @@ export class SecurityService implements ISecurityService {
       /(;\s*INSERT)/i,
       /(;\s*UPDATE)/i,
       /(--\s*$)/m,
-      /\/\*.*\*\//s,
+      /\/\*[\s\S]*?\*\//,  // Changed from /s flag to [\s\S] for es2018 compatibility
       /(EXEC\s*\()/i,
       /(EXECUTE\s*\()/i,
       /(sp_\w+)/i,
