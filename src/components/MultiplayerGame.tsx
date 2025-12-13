@@ -12,6 +12,7 @@ import { useViewportSize } from '../hooks';
 import { MultiplayerGameBoard } from './MultiplayerGameBoard';
 import AtmosphericEffects from './AtmosphericEffects';
 import StatisticsPanel from './StatisticsPanel';
+import MultiplayerModeSelector, { MultiplayerMode } from './MultiplayerModeSelector';
 
 import { useTranslation } from '../hooks/useTranslation';
 import {
@@ -36,9 +37,11 @@ interface MultiplayerGameProps {
 }
 
 enum MultiplayerState {
+  MODE_SELECTION = 'mode_selection',
   CONNECTING = 'connecting',
   LOBBY = 'lobby',
   MATCHMAKING = 'matchmaking',
+  WAITING_FOR_OPPONENT = 'waiting_for_opponent',
   IN_GAME = 'in_game',
   DECISION_REVERSAL = 'decision_reversal',
   ROUND_SELECTION = 'round_selection',
@@ -64,8 +67,11 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   });
 
   const [multiplayerState, setMultiplayerState] = useState<MultiplayerState>(
-    tournamentContext ? MultiplayerState.IN_GAME : MultiplayerState.CONNECTING
+    tournamentContext ? MultiplayerState.IN_GAME : MultiplayerState.MODE_SELECTION
   );
+  
+  const [selectedMode, setSelectedMode] = useState<MultiplayerMode | null>(null);
+  const [gameCode, setGameCode] = useState<string | null>(null);
 
   const [currentSession, setCurrentSession] = useState<GameSession | null>(
     null
@@ -188,14 +194,19 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       // Clear connection error
       setConnectionError(null);
 
-
-
       // If we were in a game and got disconnected, try to rejoin
       if (currentMatchIdRef.current && currentStateRef.current === MultiplayerState.IN_GAME) {
         console.log('🔄 Reconnected during game, staying in game state');
         // Stay in current state, connection is restored
-      } else {
+      } else if (tournamentContext) {
         setMultiplayerState(MultiplayerState.LOBBY);
+      } else if (currentStateRef.current === MultiplayerState.CONNECTING) {
+        // We're connecting for a specific mode - state will be updated by mode selection useEffect
+        console.log('🔄 Connection established, waiting for mode selection to complete');
+      } else {
+        // No mode selected yet - go to mode selection
+        console.log('📋 No mode selected - showing mode selection');
+        setMultiplayerState(MultiplayerState.MODE_SELECTION);
       }
     });
 
@@ -655,8 +666,11 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       // This can be handled by showing a loading state or message
     });
 
-    // Start connection
-    wsClient.current.connect();
+    // Start connection only for tournament matches
+    // For normal multiplayer, connection will be started when mode is selected
+    if (tournamentContext) {
+      wsClient.current.connect();
+    }
 
     // Cleanup on unmount
     return () => {
@@ -666,6 +680,36 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Handle mode selection after connection
+  useEffect(() => {
+    if (!wsClient.current?.isConnected() || !selectedMode || multiplayerState !== MultiplayerState.CONNECTING) {
+      return;
+    }
+
+    console.log('🎯 Processing mode selection:', selectedMode, 'with code:', gameCode);
+
+    if (selectedMode === MultiplayerMode.CREATE_GAME && gameCode) {
+      console.log('🎮 Creating private game:', gameCode);
+      wsClient.current.send({
+        type: 'CREATE_PRIVATE_GAME',
+        gameCode: gameCode,
+        player: userToPlayer(humanPlayer)
+      });
+      setMultiplayerState(MultiplayerState.WAITING_FOR_OPPONENT);
+    } else if (selectedMode === MultiplayerMode.JOIN_GAME && gameCode) {
+      console.log('🔍 Joining private game:', gameCode);
+      wsClient.current.send({
+        type: 'JOIN_PRIVATE_GAME',
+        gameCode: gameCode,
+        player: userToPlayer(humanPlayer)
+      });
+      setMultiplayerState(MultiplayerState.MATCHMAKING);
+    } else if (selectedMode === MultiplayerMode.RANDOM_MATCH) {
+      console.log('🎲 Random match mode - going to lobby');
+      setMultiplayerState(MultiplayerState.LOBBY);
+    }
+  }, [selectedMode, gameCode, multiplayerState, humanPlayer]);
 
   // Reversal countdown timer
   useEffect(() => {
@@ -953,8 +997,75 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     return calculateCooperationPercentage(session);
   };
 
+  const handleModeSelect = useCallback((mode: MultiplayerMode, code?: string) => {
+    setSelectedMode(mode);
+    
+    if (mode === MultiplayerMode.RANDOM_MATCH) {
+      // Rastgele eşleşme - mevcut sistem
+      setMultiplayerState(MultiplayerState.CONNECTING);
+      // Start WebSocket connection
+      if (wsClient.current && !wsClient.current.isConnected()) {
+        wsClient.current.connect();
+      }
+    } else if (mode === MultiplayerMode.CREATE_GAME) {
+      // Oyun oluştur - kod üret ve bağlan
+      const newCode = generateGameCode();
+      setGameCode(newCode);
+      setMultiplayerState(MultiplayerState.CONNECTING);
+      // Start WebSocket connection
+      if (wsClient.current && !wsClient.current.isConnected()) {
+        wsClient.current.connect();
+      }
+    } else if (mode === MultiplayerMode.JOIN_GAME && code) {
+      // Oyun ara - koda katıl
+      setGameCode(code);
+      setMultiplayerState(MultiplayerState.CONNECTING);
+      // Start WebSocket connection
+      if (wsClient.current && !wsClient.current.isConnected()) {
+        wsClient.current.connect();
+      }
+    }
+  }, []);
+
+  const generateGameCode = (): string => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  };
+
   const renderCurrentState = () => {
     switch (multiplayerState) {
+      case MultiplayerState.MODE_SELECTION:
+        return (
+          <MultiplayerModeSelector
+            onModeSelect={handleModeSelect}
+            onBack={() => onGameEnd()}
+          />
+        );
+
+      case MultiplayerState.WAITING_FOR_OPPONENT:
+        return (
+          <div className="multiplayer-status">
+            <h2>🎮 Oyun Oluşturuldu</h2>
+            <div className="game-code-display">
+              <p>Oyun Kodunuz:</p>
+              <div className="code-box">{gameCode}</div>
+              <p className="code-hint">Bu kodu arkadaşınla paylaş</p>
+            </div>
+            <div className="loading-spinner"></div>
+            <p>Rakip bekleniyor...</p>
+            <button onClick={() => {
+              setMultiplayerState(MultiplayerState.MODE_SELECTION);
+              setGameCode(null);
+            }} className="back-btn">
+              İptal
+            </button>
+          </div>
+        );
+
       case MultiplayerState.CONNECTING:
         return (
           <div className="multiplayer-status">

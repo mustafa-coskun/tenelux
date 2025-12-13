@@ -17,9 +17,14 @@ export const AdBanner: React.FC<AdBannerProps> = ({ placement, className = '', s
   const containerId = `ad-banner-${placement}`;
 
   useEffect(() => {
-    // Component mount olduğunda reklamı yükle
+    // Component mount olduğunda reklamı yükle - AdSense policy compliance ile
     const timer = setTimeout(() => {
-      adService.loadBannerAd(placement, containerId);
+      // Çift kontrol: hem placement hem de sayfa uygunluğu
+      if (adService.shouldShowAd(placement) && adService.isPageAdSenseCompliant()) {
+        adService.loadBannerAd(placement, containerId);
+      } else {
+        console.log('Ad blocked for AdSense policy compliance:', placement);
+      }
     }, 100);
 
     // Cleanup
@@ -30,7 +35,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({ placement, className = '', s
   }, [placement, containerId]);
 
   // Reklam gösterilmeyecekse component'i render etme
-  if (!adService.shouldShowAd(placement)) {
+  if (!adService.shouldShowAd(placement) || !adService.isPageAdSenseCompliant()) {
     return null;
   }
 

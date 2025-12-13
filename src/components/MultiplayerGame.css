@@ -701,3 +701,53 @@
     transform: translateY(-3px);
   }
 }
+
+
+/* Game Code Display */
+.game-code-display {
+  margin: 30px 0;
+  text-align: center;
+}
+
+.game-code-display p {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 10px 0;
+}
+
+.code-box {
+  display: inline-block;
+  padding: 20px 40px;
+  background: rgba(102, 126, 234, 0.2);
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  font-size: 2.5rem;
+  font-weight: bold;
+  letter-spacing: 8px;
+  color: white;
+  margin: 20px 0;
+  box-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(102, 126, 234, 0.6);
+  }
+}
+
+.code-hint {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .code-box {
+    font-size: 1.8rem;
+    letter-spacing: 4px;
+    padding: 15px 30px;
+  }
+}

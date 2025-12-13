@@ -16,6 +16,7 @@ class GameServer {
         this.activeMatches = new Map();
         this.partyLobbies = new Map();
         this.activeTournaments = new Map();
+        this.privateGames = new Map(); // gameCode -> { hostId, guestId, status }
         
         // Server-side player ID management
         // Maps: sessionToken -> serverPlayerId
@@ -486,6 +487,96 @@ class GameServer {
                 }
                 break;
 
+            case 'CREATE_PRIVATE_GAME':
+                if (!ws.clientId || !data.gameCode) {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: 'Invalid request' }));
+                    break;
+                }
+
+                // Oyun kodu zaten varsa hata
+                if (this.privateGames.has(data.gameCode)) {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: 'Game code already exists' }));
+                    break;
+                }
+
+                // Private game oluştur
+                this.privateGames.set(data.gameCode, {
+                    hostId: ws.clientId,
+                    hostPlayer: data.player,
+                    guestId: null,
+                    status: 'waiting',
+                    createdAt: Date.now()
+                });
+
+                console.log(`🎮 Private game created: ${data.gameCode} by ${data.player.name}`);
+
+                ws.send(JSON.stringify({
+                    type: 'PRIVATE_GAME_CREATED',
+                    gameCode: data.gameCode
+                }));
+                break;
+
+            case 'JOIN_PRIVATE_GAME':
+                if (!ws.clientId || !data.gameCode) {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: 'Invalid request' }));
+                    break;
+                }
+
+                const privateGame = this.privateGames.get(data.gameCode);
+
+                if (!privateGame) {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: 'Game not found' }));
+                    break;
+                }
+
+                if (privateGame.status !== 'waiting') {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: 'Game already started' }));
+                    break;
+                }
+
+                if (privateGame.hostId === ws.clientId) {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: 'Cannot join your own game' }));
+                    break;
+                }
+
+                // Guest'i ekle ve maçı başlat
+                privateGame.guestId = ws.clientId;
+                privateGame.guestPlayer = data.player;
+                privateGame.status = 'matched';
+
+                console.log(`🎮 Player ${data.player.name} joined private game: ${data.gameCode}`);
+
+                // Her iki oyuncuya da match found gönder
+                const matchId = `private_${data.gameCode}_${Date.now()}`;
+                
+                const hostWs = Array.from(this.wss.clients).find(
+                    client => client.clientId === privateGame.hostId
+                );
+                const guestWs = ws;
+
+                if (hostWs) {
+                    hostWs.send(JSON.stringify({
+                        type: 'MATCH_FOUND',
+                        matchId: matchId,
+                        opponent: privateGame.guestPlayer,
+                        isHost: true
+                    }));
+                }
+
+                guestWs.send(JSON.stringify({
+                    type: 'MATCH_FOUND',
+                    matchId: matchId,
+                    opponent: privateGame.hostPlayer,
+                    isHost: false
+                }));
+
+                // Active match oluştur
+                this.createPrivateMatch(matchId, privateGame.hostPlayer, privateGame.guestPlayer);
+
+                // Private game'i temizle
+                this.privateGames.delete(data.gameCode);
+                break;
+
             case 'START_TOURNAMENT':
                 console.log('🏆 START_TOURNAMENT received:', data);
                 if (!ws.clientId) {
@@ -679,11 +770,11 @@ class GameServer {
             case 'GAME_DECISION':
                 this.updateSessionActivity(ws.clientId);
 
-                const matchId = data.matchId;
-                const match = this.activeMatches.get(matchId);
+                const gameMatchId = data.matchId;
+                const match = this.activeMatches.get(gameMatchId);
 
                 console.log('🎮 GAME_DECISION received:', {
-                    matchId: matchId,
+                    matchId: gameMatchId,
                     clientId: ws.clientId,
                     decision: data.decision,
                     round: data.round,
@@ -739,7 +830,7 @@ class GameServer {
                             clearTimeout(match.roundTimeout);
                             match.roundTimeout = null;
                         }
-                        this.processRoundResult(match, matchId);
+                        this.processRoundResult(match, gameMatchId);
                     } else {
                         console.log('🎮 Waiting for other player decision');
                     }
@@ -753,8 +844,8 @@ class GameServer {
                 break;
 
             case 'GAME_MESSAGE':
-                const gameMatchId = data.matchId;
-                const gameMatch = this.activeMatches.get(gameMatchId);
+                const msgMatchId = data.matchId;
+                const gameMatch = this.activeMatches.get(msgMatchId);
                 if (gameMatch) {
                     const senderClientId = ws.clientId;
                     
@@ -3888,6 +3979,64 @@ class GameServer {
         // Enhanced matchmaking logic would go here
         // For now, use basic matching
         return this.findBasicMatch();
+    }
+
+    createPrivateMatch(matchId, player1, player2) {
+        const match = {
+            id: matchId,
+            player1: { playerId: player1.id, player: player1 },
+            player2: { playerId: player2.id, player: player2 },
+            timestamp: Date.now(),
+            currentRound: 0,
+            maxRounds: 10,
+            decisions: new Map(),
+            scores: { player1: 0, player2: 0 },
+            gameState: 'WAITING_FOR_DECISIONS',
+            rematchRequests: new Set(),
+            roundTimeout: null,
+            isPrivateGame: true
+        };
+
+        const initialRoundDecisions = {};
+        match.decisions.set(0, initialRoundDecisions);
+
+        match.roundTimeout = setTimeout(() => {
+            const timeoutMatch = this.activeMatches.get(matchId);
+            if (!timeoutMatch || timeoutMatch.roundTimeout === null) return;
+
+            const timeoutRoundDecisions = timeoutMatch.decisions.get(0) || {};
+
+            if (!timeoutRoundDecisions.player1Decision) {
+                timeoutRoundDecisions.player1Decision = 'COOPERATE';
+            }
+            if (!timeoutRoundDecisions.player2Decision) {
+                timeoutRoundDecisions.player2Decision = 'COOPERATE';
+            }
+
+            timeoutMatch.decisions.set(0, timeoutRoundDecisions);
+            timeoutMatch.roundTimeout = null;
+
+            this.processRoundResult(timeoutMatch, matchId);
+        }, 30000);
+
+        this.activeMatches.set(matchId, match);
+
+        console.log(`🎮 Private match created: ${matchId}`);
+
+        // Start first round
+        setTimeout(() => {
+            this.broadcastToClient(player1.id, {
+                type: 'NEW_ROUND',
+                round: 0,
+                maxRounds: 10
+            });
+
+            this.broadcastToClient(player2.id, {
+                type: 'NEW_ROUND',
+                round: 0,
+                maxRounds: 10
+            });
+        }, 1000);
     }
 
     findBasicMatch() {

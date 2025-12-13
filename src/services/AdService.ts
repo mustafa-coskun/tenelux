@@ -90,19 +90,51 @@ class AdService {
 
   /**
    * Reklam gösterilmeli mi kontrol et
+   * AdSense politikalarına uygun olarak içerik olmayan ekranlarda reklam gösterme
    */
   shouldShowAd(placement: AdPlacement): boolean {
     if (!this.config.enabled) return false;
     if (this.adBlockDetected) return false;
     if (!this.config.adUnits[placement]) return false;
+    
+    // AdSense Policy Compliance: Sadece yüksek kaliteli içeriğe sahip sayfalarda reklam göster
+    // İzin verilen yerleşimler (yeterli içeriğe sahip):
+    const allowedPlacements = [
+      AdPlacement.MAIN_MENU,           // Ana menü - oyun kuralları ve seçenekler
+      AdPlacement.GAME_END,            // Oyun sonu - sonuçlar ve istatistikler  
+      AdPlacement.STATISTICS_PANEL,    // İstatistik paneli - detaylı veriler
+      AdPlacement.SIDEBAR,             // Kenar çubuğu - ek içerik ile
+      AdPlacement.FOOTER,              // Alt bilgi - site bilgileri ile
+    ];
+    
+    // AdSense Policy: Bu yerleşimlerde reklam gösterme (içerik yetersiz):
+    const prohibitedPlacements = [
+      AdPlacement.LOBBY_WAITING,        // Bekleme ekranları
+      AdPlacement.TOURNAMENT_ROUND_END, // Kısa geçiş ekranları
+    ];
+    
+    // Sadece izin verilen yerleşimlerde reklam göster
+    if (!allowedPlacements.includes(placement)) {
+      if (this.config.testMode) {
+        console.log(`Ad blocked for policy compliance: ${placement}`);
+      }
+      return false;
+    }
+    
     return true;
   }
 
   /**
    * Banner reklam yükle
+   * AdSense politikalarına uygun olarak sadece uygun sayfalarda
    */
   loadBannerAd(placement: AdPlacement, containerId: string): void {
-    if (!this.shouldShowAd(placement)) return;
+    if (!this.shouldShowAd(placement)) {
+      if (this.config.testMode) {
+        console.log(`Ad loading blocked for policy compliance: ${placement}`);
+      }
+      return;
+    }
 
     const adUnitId = this.config.adUnits[placement];
     if (!adUnitId) return;
@@ -114,17 +146,29 @@ class AdService {
       }
       
       this.adsLoaded.add(containerId);
+      
+      if (this.config.testMode) {
+        console.log(`Ad loaded successfully: ${placement} at ${containerId}`);
+      }
     } catch (error) {
       console.error('Failed to load banner ad:', error);
     }
   }
 
   /**
-   * AdSense banner yükle
+   * AdSense banner yükle - Policy compliant
    */
   private loadAdSenseBanner(containerId: string, adUnitId: string): void {
     const container = document.getElementById(containerId);
     if (!container) return;
+
+    // AdSense Policy: Sadece yeterli içeriğe sahip sayfalarda reklam yükle
+    if (!this.isPageContentSufficient()) {
+      if (this.config.testMode) {
+        console.log('Ad loading blocked: Insufficient page content for AdSense policy');
+      }
+      return;
+    }
 
     // Önceki reklamı temizle
     container.innerHTML = '';
@@ -156,6 +200,42 @@ class AdService {
     } catch (error) {
       console.error('AdSense push failed:', error);
     }
+  }
+
+  /**
+   * Sayfa içeriğinin AdSense politikaları için yeterli olup olmadığını kontrol et
+   */
+  private isPageContentSufficient(): boolean {
+    // Sayfa içeriği kontrolü
+    const bodyText = document.body.innerText || '';
+    const contentLength = bodyText.trim().length;
+    
+    // Minimum içerik uzunluğu (AdSense için önerilen)
+    const minContentLength = 300;
+    
+    // Loading/connecting ekranlarını tespit et
+    const loadingIndicators = [
+      'bağlanıyor', 'connecting', 'loading', 'yükleniyor',
+      'bekleniyor', 'waiting', 'aranıyor', 'finding'
+    ];
+    
+    const hasLoadingContent = loadingIndicators.some(indicator => 
+      bodyText.toLowerCase().includes(indicator)
+    );
+    
+    // Yeterli içerik var mı ve loading ekranı değil mi?
+    const sufficient = contentLength >= minContentLength && !hasLoadingContent;
+    
+    if (this.config.testMode) {
+      console.log('Content sufficiency check:', {
+        contentLength,
+        minRequired: minContentLength,
+        hasLoadingContent,
+        sufficient
+      });
+    }
+    
+    return sufficient;
   }
 
   /**
@@ -214,6 +294,45 @@ class AdService {
       container.innerHTML = '';
       this.adsLoaded.delete(containerId);
     }
+  }
+
+  /**
+   * AdSense policy compliance check
+   * Sayfa türünü analiz ederek reklam gösterilip gösterilmeyeceğini belirle
+   */
+  isPageAdSenseCompliant(): boolean {
+    const url = window.location.pathname;
+    const title = document.title;
+    const bodyText = document.body.innerText || '';
+    
+    // Yasaklı sayfa türleri (AdSense policy)
+    const prohibitedPageTypes = [
+      '/loading', '/connecting', '/waiting', '/error',
+      'bağlanıyor', 'yükleniyor', 'bekleniyor', 'hata'
+    ];
+    
+    // URL veya içerik kontrolü
+    const isProhibited = prohibitedPageTypes.some(type => 
+      url.includes(type) || title.toLowerCase().includes(type) || 
+      bodyText.toLowerCase().includes(type)
+    );
+    
+    // Minimum içerik kontrolü
+    const hasMinimumContent = bodyText.trim().length >= 300;
+    
+    // Oyun içeriği var mı kontrolü
+    const hasGameContent = bodyText.includes('oyun') || bodyText.includes('game') ||
+                          bodyText.includes('strateji') || bodyText.includes('mahkum');
+    
+    const compliant = !isProhibited && hasMinimumContent && hasGameContent;
+    
+    if (this.config.testMode) {
+      console.log('AdSense compliance check:', {
+        url, isProhibited, hasMinimumContent, hasGameContent, compliant
+      });
+    }
+    
+    return compliant;
   }
 
   /**
