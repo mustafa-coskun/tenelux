@@ -3869,20 +3869,92 @@ class GameServer {
                     }, 5 * 60 * 1000); // 5 minutes
 
                 } else {
-                    // Regular match - end immediately
-                    this.broadcastToClient(opponentId, {
-                        type: 'OPPONENT_DISCONNECTED',
-                        matchId: matchId
+                    // Regular match - mark as disconnected and wait briefly for reconnection
+                    console.log(`[WS INFO] Regular match player disconnected, waiting for reconnection`, {
+                        matchId: matchId,
+                        disconnectedPlayer: clientId
                     });
 
-                    if (match.roundTimeout) {
-                        clearTimeout(match.roundTimeout);
+                    // Mark player as disconnected
+                    if (match.player1.playerId === clientId) {
+                        match.player1.disconnected = true;
+                    } else {
+                        match.player2.disconnected = true;
                     }
 
-                    this.activeMatches.delete(matchId);
-                    if (this.logger) {
-                        this.logger.info('Match ended due to disconnection', { matchId, disconnectedPlayer: clientId });
-                    }
+                    // Notify opponent about disconnection
+                    this.broadcastToClient(opponentId, {
+                        type: 'OPPONENT_DISCONNECTED',
+                        matchId: matchId,
+                        message: 'Rakibiniz bağlantısı kesildi. Yeniden bağlanması bekleniyor...'
+                    });
+
+                    // Set timeout for reconnection (30 seconds for regular matches)
+                    setTimeout(() => {
+                        const currentMatch = this.activeMatches.get(matchId);
+                        if (currentMatch &&
+                            ((currentMatch.player1.playerId === clientId && currentMatch.player1.disconnected) ||
+                                (currentMatch.player2.playerId === clientId && currentMatch.player2.disconnected))) {
+
+                            // Player didn't reconnect, calculate forfeit
+                            console.log(`[WS INFO] Regular match ended due to disconnection`, {
+                                matchId: matchId,
+                                disconnectedPlayer: clientId
+                            });
+
+                            // Calculate forfeit scores (similar to tournament)
+                            const currentRound = currentMatch.currentRound || 0;
+                            const maxRounds = currentMatch.maxRounds || 10;
+                            const remainingRounds = Math.max(0, maxRounds - currentRound);
+                            
+                            // Give winner 3 points for each remaining round
+                            const forfeitBonus = remainingRounds * 3;
+                            const currentScores = currentMatch.scores || { player1: 0, player2: 0 };
+                            
+                            // Determine winner (opponent of disconnected player)
+                            const winnerId = opponentId;
+                            const isPlayer1Winner = currentMatch.player1.playerId === winnerId;
+                            
+                            const finalScores = {
+                                player1: isPlayer1Winner ? currentScores.player1 + forfeitBonus : currentScores.player1,
+                                player2: isPlayer1Winner ? currentScores.player2 : currentScores.player2 + forfeitBonus
+                            };
+
+                            console.log(`[WS INFO] Forfeit scoring:`, {
+                                currentRound,
+                                maxRounds,
+                                remainingRounds,
+                                forfeitBonus,
+                                currentScores,
+                                finalScores
+                            });
+
+                            // Send statistics to winner
+                            this.broadcastToClient(winnerId, {
+                                type: 'SHOW_STATISTICS',
+                                scores: finalScores,
+                                forfeit: true,
+                                forfeitedBy: clientId,
+                                isWinner: true,
+                                message: 'Rakibiniz oyunu terk etti. Kazandınız!'
+                            });
+
+                            // Clean up match
+                            if (currentMatch.roundTimeout) {
+                                clearTimeout(currentMatch.roundTimeout);
+                            }
+                            this.activeMatches.delete(matchId);
+
+                            if (this.logger) {
+                                this.logger.info('Match ended due to disconnection with forfeit', { 
+                                    matchId, 
+                                    disconnectedPlayer: clientId,
+                                    winner: winnerId,
+                                    finalScores
+                                });
+                            }
+                        }
+                    }, 30 * 1000); // 30 seconds for regular matches
                 }
             }
         }

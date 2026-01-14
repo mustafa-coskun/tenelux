@@ -233,12 +233,6 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     // Tournament match events are handled by PartyGame/TournamentMatchGame components
     // MultiplayerGame only handles standard multiplayer matches
 
-    // Handle opponent disconnection
-    wsClient.current.onOpponentDisconnected(() => {
-      console.log('⚠️ Opponent disconnected');
-      setConnectionError('Opponent disconnected');
-    });
-
     wsClient.current.onQueueStatus((data: QueueStatusData) => {
       setQueuePosition(data.position);
       setQueueSize(data.queueSize);
@@ -271,19 +265,10 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         return;
       }
       
-      // Normal multiplayer match - return to lobby
-      console.log('❌ Opponent disconnected in normal match - returning to lobby');
-      setConnectionError('Rakibiniz oyunu terk etti. Ana menüye dönülüyor...');
-
-      // Wait a bit then return to lobby
-      setTimeout(() => {
-        setMultiplayerState(MultiplayerState.LOBBY);
-        setCurrentSession(null);
-        setOpponent(null);
-        setCurrentMatchId(null);
-        setCommunicationMessages([]);
-        setConnectionError(null);
-      }, 3000);
+      // Normal multiplayer match - wait for server to send SHOW_STATISTICS with forfeit
+      console.log('❌ Opponent disconnected in normal match - waiting for server statistics');
+      setConnectionError('Rakibiniz bağlantısı kesildi. Yeniden bağlanması bekleniyor...');
+      // Don't return to lobby immediately - server will send SHOW_STATISTICS after timeout
     });
 
     // Handle SHOW_STATISTICS from server (includes forfeit)
@@ -1073,17 +1058,9 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       });
 
       wsClient.current.onOpponentDisconnected(() => {
-        console.log('❌ Opponent disconnected in normal match - returning to lobby');
-        setConnectionError('Rakibiniz oyunu terk etti. Ana menüye dönülüyor...');
-
-        setTimeout(() => {
-          setMultiplayerState(MultiplayerState.LOBBY);
-          setCurrentSession(null);
-          setOpponent(null);
-          setCurrentMatchId(null);
-          setCommunicationMessages([]);
-          setConnectionError(null);
-        }, 3000);
+        console.log('❌ Opponent disconnected in normal match - waiting for server statistics');
+        setConnectionError('Rakibiniz bağlantısı kesildi. Yeniden bağlanması bekleniyor...');
+        // Don't return to lobby immediately - server will send SHOW_STATISTICS after timeout
       });
 
       wsClient.current.onShowStatistics((data: any) => {
