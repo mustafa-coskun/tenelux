@@ -12,6 +12,7 @@ interface MultiplayerGameBoardProps {
   onPlayerDecision: (decision: Decision) => void;
   onCommunicationMessage: (message: string) => void;
   onGameEnd: (gameEndType?: string) => void;
+  onForfeit?: () => void;
   messages?: Array<{ playerId: string; message: string; timestamp: Date }>;
   timerSync?: { round: number; duration: number } | null;
   connectionError?: string | null;
@@ -24,6 +25,7 @@ export const MultiplayerGameBoard: React.FC<MultiplayerGameBoardProps> = ({
   onPlayerDecision,
   onCommunicationMessage,
   onGameEnd,
+  onForfeit,
   messages = [],
   timerSync,
   connectionError,
@@ -141,7 +143,13 @@ export const MultiplayerGameBoard: React.FC<MultiplayerGameBoardProps> = ({
         )}
         <button
           className="btn btn-secondary leave-game-btn"
-          onClick={() => onGameEnd('forfeit')}
+          onClick={() => {
+            if (onForfeit) {
+              onForfeit();
+            } else {
+              onGameEnd('forfeit');
+            }
+          }}
         >
           {t('game.endGame')}
         </button>

@@ -500,6 +500,89 @@ class GameServer {
                 }
                 break;
 
+            case 'FORFEIT_MATCH':
+                console.log('🏳️ FORFEIT_MATCH received from:', ws.clientId);
+                
+                if (!ws.clientId) {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: 'Not registered' }));
+                    break;
+                }
+
+                // Find the match this player is in
+                let forfeitMatchId = null;
+                let forfeitMatch = null;
+                
+                for (const [matchId, match] of this.activeMatches.entries()) {
+                    if (match.player1.playerId === ws.clientId || match.player2.playerId === ws.clientId) {
+                        forfeitMatchId = matchId;
+                        forfeitMatch = match;
+                        break;
+                    }
+                }
+
+                if (!forfeitMatch) {
+                    console.log('⚠️ No active match found for forfeit');
+                    ws.send(JSON.stringify({ type: 'ERROR', message: 'No active match found' }));
+                    break;
+                }
+
+                const forfeitingPlayerId = ws.clientId;
+                const forfeitOpponentId = forfeitMatch.player1.playerId === forfeitingPlayerId ? 
+                    forfeitMatch.player2.playerId : forfeitMatch.player1.playerId;
+
+                console.log('🏳️ Processing forfeit:', {
+                    matchId: forfeitMatchId,
+                    forfeitingPlayer: forfeitingPlayerId,
+                    opponent: forfeitOpponentId
+                });
+
+                // Calculate forfeit scores
+                const currentRound = forfeitMatch.currentRound || 0;
+                const maxRounds = forfeitMatch.maxRounds || 10;
+                const remainingRounds = Math.max(0, maxRounds - currentRound);
+                const forfeitBonus = remainingRounds * 3;
+                const currentScores = forfeitMatch.scores || { player1: 0, player2: 0 };
+                
+                const isPlayer1Winner = forfeitMatch.player1.playerId === forfeitOpponentId;
+                const finalScores = {
+                    player1: isPlayer1Winner ? currentScores.player1 + forfeitBonus : currentScores.player1,
+                    player2: isPlayer1Winner ? currentScores.player2 : currentScores.player2 + forfeitBonus
+                };
+
+                console.log('🏳️ Forfeit scoring:', {
+                    currentRound,
+                    maxRounds,
+                    remainingRounds,
+                    forfeitBonus,
+                    finalScores
+                });
+
+                // Send immediate statistics to winner (no waiting)
+                this.broadcastToClient(forfeitOpponentId, {
+                    type: 'SHOW_STATISTICS',
+                    scores: finalScores,
+                    forfeit: true,
+                    forfeitedBy: forfeitingPlayerId,
+                    isWinner: true,
+                    immediate: true, // Flag to show immediately without waiting
+                    message: 'Rakibiniz pes etti. Kazandınız!'
+                });
+
+                // Confirm forfeit to the forfeiting player
+                ws.send(JSON.stringify({
+                    type: 'FORFEIT_CONFIRMED',
+                    message: 'Oyundan ayrıldınız'
+                }));
+
+                // Clean up match
+                if (forfeitMatch.roundTimeout) {
+                    clearTimeout(forfeitMatch.roundTimeout);
+                }
+                this.activeMatches.delete(forfeitMatchId);
+
+                console.log('🏳️ Match ended due to forfeit:', forfeitMatchId);
+                break;
+
             case 'CREATE_PRIVATE_GAME':
                 if (!ws.clientId || !data.gameCode) {
                     ws.send(JSON.stringify({ type: 'ERROR', message: 'Invalid request' }));

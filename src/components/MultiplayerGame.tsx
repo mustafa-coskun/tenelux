@@ -275,6 +275,26 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     wsClient.current.onShowStatistics((data: any) => {
       console.log('📊 *** SHOW_STATISTICS RECEIVED ***:', data);
       
+      // Check if this is an immediate forfeit (player quit voluntarily)
+      if (data.immediate && data.forfeit) {
+        console.log('🏳️ *** IMMEDIATE FORFEIT - OPPONENT QUIT ***');
+        
+        // Clear connection error message
+        setConnectionError(null);
+        
+        // Show statistics immediately without waiting message
+        const forfeitStats = {
+          finalScores: data.scores || { player1: 0, player2: 0 },
+          updatedDecisions: data.updatedDecisions || {},
+          gameEndReason: 'opponent_forfeit',
+          isWinner: true
+        };
+        
+        setGameStatistics(forfeitStats);
+        setMultiplayerState(MultiplayerState.STATISTICS);
+        return;
+      }
+      
       if (data.forfeit && tournamentContext) {
         console.log('🏳️ *** FORFEIT STATISTICS FROM SERVER ***');
         
@@ -829,6 +849,21 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     }
   };
 
+  const handleForfeit = () => {
+    console.log('🏳️ Player forfeiting match');
+    
+    if (wsClient.current && currentMatchId) {
+      // Send forfeit message to server
+      wsClient.current.send({
+        type: 'FORFEIT_MATCH',
+        matchId: currentMatchId
+      });
+      
+      // Return to main menu immediately
+      onGameEnd('forfeit');
+    }
+  };
+
   const handleDecisionReversal = (accept: boolean) => {
     console.log(`🔄 Decision reversal: ${accept ? 'ACCEPT' : 'DECLINE'}`);
     console.log('Current reversal status:', reversalResponseStatus);
@@ -1065,6 +1100,27 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
 
       wsClient.current.onShowStatistics((data: any) => {
         console.log('📊 *** SHOW_STATISTICS RECEIVED ***:', data);
+        
+        // Check if this is an immediate forfeit (player quit voluntarily)
+        if (data.immediate && data.forfeit) {
+          console.log('🏳️ *** IMMEDIATE FORFEIT - OPPONENT QUIT ***');
+          
+          // Clear connection error message
+          setConnectionError(null);
+          
+          // Show statistics immediately without waiting message
+          const forfeitStats = {
+            finalScores: data.scores || { player1: 0, player2: 0 },
+            updatedDecisions: data.updatedDecisions || {},
+            gameEndReason: 'opponent_forfeit',
+            isWinner: true
+          };
+          
+          setGameStatistics(forfeitStats);
+          setMultiplayerState(MultiplayerState.STATISTICS);
+          return;
+        }
+        
         const stats = {
           finalScores: data.scores || { player1: 0, player2: 0 },
           updatedDecisions: data.updatedDecisions,
@@ -1448,6 +1504,7 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
               onPlayerDecision={handlePlayerDecision}
               onCommunicationMessage={handleCommunicationSend}
               onGameEnd={onGameEnd}
+              onForfeit={handleForfeit}
               messages={communicationMessages}
               timerSync={timerSync}
               connectionError={connectionError}
