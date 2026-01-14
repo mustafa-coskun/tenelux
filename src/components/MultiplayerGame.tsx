@@ -121,15 +121,20 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
 
   // Initialize WebSocket connection
   useEffect(() => {
-    // First check for session token via ServerUserService
+    // DON'T create WebSocket client on mount for normal multiplayer
+    // It will be created when mode is selected
+    if (!tournamentContext) {
+      console.log('🎮 Multiplayer mode: WebSocket will be created when mode is selected');
+      return;
+    }
+
+    // Only for tournament matches: create and connect immediately
+    console.log('🏆 Tournament mode: Creating WebSocket client');
     const serverUserService = getServerUserService();
     const sessionToken = serverUserService.getSessionToken();
-    console.log('🔍 Checking ServerUserService for sessionToken:', sessionToken ? 'FOUND' : 'NOT FOUND');
-
-    // Create WebSocket client
+    
     wsClient.current = new WebSocketGameClient();
-
-    // If this is a tournament match, set up tournament-specific state
+    
     if (tournamentContext) {
       console.log('🏆 Tournament match detected:', tournamentContext);
       setCurrentMatchId(tournamentContext.matchId);
@@ -197,7 +202,8 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       } else if (tournamentContext) {
         setMultiplayerState(MultiplayerState.LOBBY);
       } else if (currentStateRef.current === MultiplayerState.CONNECTING) {
-        console.log('🔄 Connected while in CONNECTING state, mode:', selectedMode);
+        console.log('🔄 Connected while in CONNECTING state, transitioning to LOBBY');
+        setMultiplayerState(MultiplayerState.LOBBY);
       } else {
         // No mode selected yet - go to mode selection
         console.log('📋 No mode selected - showing mode selection');
@@ -999,6 +1005,297 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     
     setSelectedMode(mode);
     
+    // Create WebSocket client if it doesn't exist (for normal multiplayer)
+    if (!wsClient.current) {
+      console.log('🔌 Creating WebSocket client for multiplayer mode');
+      const serverUserService = getServerUserService();
+      const sessionToken = serverUserService.getSessionToken();
+      
+      wsClient.current = new WebSocketGameClient();
+      
+      // Set up event handlers (same as in useEffect for tournament)
+      wsClient.current.onConnected(() => {
+        console.log('🎮 Connected to game server');
+        console.log('Current state when connected:', currentStateRef.current);
+
+        setConnectionError(null);
+
+        if (currentMatchIdRef.current && currentStateRef.current === MultiplayerState.IN_GAME) {
+          console.log('🔄 Reconnected during game, staying in game state');
+        } else if (currentStateRef.current === MultiplayerState.CONNECTING) {
+          console.log('🔄 Connected while in CONNECTING state, transitioning to LOBBY');
+          setMultiplayerState(MultiplayerState.LOBBY);
+        } else {
+          console.log('📋 No mode selected - showing mode selection');
+          setMultiplayerState(MultiplayerState.MODE_SELECTION);
+        }
+      });
+
+      wsClient.current.onDisconnected(() => {
+        console.log('🔌 Disconnected from game server');
+        if (currentStateRef.current === MultiplayerState.IN_GAME) {
+          setConnectionError('Bağlantı kesildi. Yeniden bağlanmaya çalışılıyor...');
+        } else {
+          setMultiplayerState(MultiplayerState.CONNECTING);
+        }
+      });
+
+      wsClient.current.onMatchFound((data: MatchFoundData) => {
+        console.log('🎯 Match found!', data);
+        setCurrentMatchId(data.matchId);
+        setOpponent(data.opponent);
+        createMatch(data.opponent);
+      });
+
+      wsClient.current.onOpponentDisconnected(() => {
+        console.log('⚠️ Opponent disconnected');
+        setConnectionError('Opponent disconnected');
+      });
+
+      wsClient.current.onQueueStatus((data: QueueStatusData) => {
+        setQueuePosition(data.position);
+        setQueueSize(data.queueSize);
+      });
+
+      wsClient.current.onOpponentDecision((decision: string, round: number) => {
+        // Handle opponent decision in game (no console log for security)
+      });
+
+      wsClient.current.onOpponentMessage((message: string, timestamp: number) => {
+        setCommunicationMessages((prev) => [
+          ...prev,
+          {
+            playerId: 'opponent',
+            message: message,
+            timestamp: new Date(timestamp),
+          },
+        ]);
+      });
+
+      wsClient.current.onOpponentDisconnected(() => {
+        console.log('❌ Opponent disconnected in normal match - returning to lobby');
+        setConnectionError('Rakibiniz oyunu terk etti. Ana menüye dönülüyor...');
+
+        setTimeout(() => {
+          setMultiplayerState(MultiplayerState.LOBBY);
+          setCurrentSession(null);
+          setOpponent(null);
+          setCurrentMatchId(null);
+          setCommunicationMessages([]);
+          setConnectionError(null);
+        }, 3000);
+      });
+
+      wsClient.current.onShowStatistics((data: any) => {
+        console.log('📊 *** SHOW_STATISTICS RECEIVED ***:', data);
+        const stats = {
+          finalScores: data.scores || { player1: 0, player2: 0 },
+          updatedDecisions: data.updatedDecisions,
+          gameEndReason: data.forfeit ? 'opponent_forfeit' : 'normal'
+        };
+        setGameStatistics(stats);
+        setMultiplayerState(MultiplayerState.STATISTICS);
+      });
+
+      wsClient.current.onRoundResult((result: any) => {
+        console.log('📊 MultiplayerGame: Round Result Received:', result);
+
+        setCurrentSession((prev) => {
+          if (!prev) {
+            console.log('⚠️ MultiplayerGame: No current session to update');
+            return null;
+          }
+
+          console.log('🎮 MultiplayerGame: Updating session with result');
+
+          const roundData = {
+            roundNumber: result.round,
+            decisions: prev.players.map(
+              (player) =>
+                ({
+                  playerId: player.id,
+                  decision:
+                    player.id === humanPlayer.id
+                      ? result.yourDecision === 'COOPERATE'
+                        ? Decision.STAY_SILENT
+                        : Decision.CONFESS
+                      : result.opponentDecision === 'COOPERATE'
+                        ? Decision.STAY_SILENT
+                        : Decision.CONFESS,
+                  timestamp: new Date(),
+                  canReverse: false,
+                }) as PlayerDecision
+            ),
+            results: {
+              playerA:
+                humanPlayer.id === prev.players[0].id
+                  ? result.yourPoints
+                  : result.opponentPoints,
+              playerB:
+                humanPlayer.id === prev.players[0].id
+                  ? result.opponentPoints
+                  : result.yourPoints,
+            },
+            timestamp: new Date(),
+            phaseType: GamePhase.TRUST_PHASE,
+          };
+
+          const updatedRounds = [...prev.rounds];
+          const existingRoundIndex = updatedRounds.findIndex(
+            (r) => r.roundNumber === result.round
+          );
+
+          if (existingRoundIndex >= 0) {
+            updatedRounds[existingRoundIndex] = roundData;
+          } else {
+            updatedRounds.push(roundData);
+            updatedRounds.sort((a, b) => a.roundNumber - b.roundNumber);
+          }
+
+          console.log(
+            `🎮 MultiplayerGame: Updated session with ${updatedRounds.length} rounds`
+          );
+
+          const updatedSession = {
+            ...prev,
+            rounds: updatedRounds,
+          };
+
+          return updatedSession;
+        });
+
+        if (result.isGameOver) {
+          console.log('🏁 MultiplayerGame: Game is over, showing decision reversal');
+
+          if (multiplayerState !== MultiplayerState.DECISION_REVERSAL) {
+            console.log('🏁 Transitioning to DECISION_REVERSAL state');
+            setTimeout(() => {
+              setMultiplayerState(MultiplayerState.DECISION_REVERSAL);
+              setReversalTimeLeft(60);
+              setReversalResponseStatus({
+                playerResponded: false,
+                opponentResponded: false,
+                waitingForOpponent: false,
+              });
+              setReversalRejectionMessage(null);
+            }, 3000);
+          }
+        }
+      });
+
+      wsClient.current.onNewRound((round: number, timerDuration?: number) => {
+        console.log(`🔄 New round started: ${round}, timer: ${timerDuration}s`);
+        if (timerDuration) {
+          setTimerSync({ round, duration: timerDuration });
+        }
+      });
+
+      wsClient.current.onGameOver((data: any) => {
+        console.log('🏁 Game over received:', data);
+        const actualPlayerId = wsClient.current?.getPlayerId() || humanPlayer.id;
+        const isPlayer1 = currentSession?.players[0]?.id === actualPlayerId;
+        
+        const correctedData = {
+          ...data,
+          finalScores: {
+            player1: isPlayer1 ? data.finalScores.player1 : data.finalScores.player2,
+            player2: isPlayer1 ? data.finalScores.player2 : data.finalScores.player1
+          }
+        };
+        
+        setGameStatistics(correctedData);
+      });
+
+      wsClient.current.onRematchAccepted(() => {
+        console.log('✅ Rematch accepted, starting new game');
+        setCurrentSession((prev) =>
+          prev
+            ? {
+              ...prev,
+              rounds: [],
+            }
+            : null
+        );
+        setMultiplayerState(MultiplayerState.IN_GAME);
+      });
+
+      wsClient.current.onRematchDeclined(() => {
+        console.log('❌ Rematch declined');
+      });
+
+      wsClient.current.onError((error: string) => {
+        console.error('❌ WebSocket error:', error);
+        setConnectionError(error);
+      });
+
+      wsClient.current.onReversalResponseReceived(() => {
+        console.log('📝 My reversal response received by server');
+      });
+
+      wsClient.current.onReversalRejected((message: string) => {
+        console.log('❌ Reversal rejected:', message);
+        setReversalRejectionMessage(message);
+        setMultiplayerState(MultiplayerState.DECISION_REVERSAL);
+        setTimeout(() => {
+          setReversalRejectionMessage(null);
+        }, 3000);
+      });
+
+      wsClient.current.onReversalSelectionPhase((message: string) => {
+        console.log('🔄 Reversal selection phase:', message);
+        setReversalSelectionMessage(message);
+        setMultiplayerState(MultiplayerState.ROUND_SELECTION);
+      });
+
+      wsClient.current.onDecisionChanged((data: any) => {
+        console.log('✅ Decision changed successfully:', data);
+
+        setCurrentSession(prev => {
+          if (!prev) return prev;
+
+          const updatedRounds = [...prev.rounds];
+          const roundIndex = updatedRounds.findIndex(r => r.roundNumber === data.roundNumber);
+
+          if (roundIndex >= 0) {
+            const round = updatedRounds[roundIndex];
+            const playerDecisionIndex = round.decisions.findIndex(d => d.playerId === humanPlayer.id);
+
+            if (playerDecisionIndex >= 0) {
+              round.decisions[playerDecisionIndex].decision =
+                data.newDecision === 'COOPERATE' ? Decision.STAY_SILENT : Decision.CONFESS;
+
+              console.log('🔄 Updated local session with new decision');
+            }
+          }
+
+          return { ...prev, rounds: updatedRounds };
+        });
+
+        if (wsClient.current && currentMatchIdRef.current) {
+          console.log('📤 Auto-completing decision changes for match:', currentMatchIdRef.current);
+          wsClient.current.sendDecisionChangesComplete(currentMatchIdRef.current);
+
+          setMultiplayerState(MultiplayerState.DECISION_REVERSAL);
+          setReversalRejectionMessage('Kararınız değiştirildi. Diğer oyuncunun tamamlamasını bekliyoruz...');
+        }
+      });
+
+      wsClient.current.onFinalScoresUpdate((data: any) => {
+        console.log('🎯 Final scores update received:', data);
+        setGameStatistics(prev => ({
+          ...prev,
+          finalScores: data.finalScores,
+          winner: data.winner
+        }));
+      });
+
+      wsClient.current.onWaitingForOtherPlayer((data: any) => {
+        console.log('⏳ Waiting for other player:', data.message);
+      });
+
+      console.log('✅ WebSocket client created and handlers set up');
+    }
+    
     if (mode === MultiplayerMode.RANDOM_MATCH) {
       console.log('🎲 RANDOM_MATCH: Setting state to CONNECTING');
       setMultiplayerState(MultiplayerState.CONNECTING);
@@ -1030,7 +1327,7 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         console.log('⚠️ WebSocket already connected or client is null');
       }
     }
-  }, []);
+  }, [humanPlayer, multiplayerState, currentSession, createMatch]);
 
   const generateGameCode = (): string => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
