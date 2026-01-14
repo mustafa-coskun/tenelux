@@ -178,13 +178,9 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       console.log('🏆 Player ID set for tournament match:', playerIdForServer);
     }
     
-    // Set session token BEFORE connecting
-    if (sessionToken) {
-      wsClient.current.setSessionToken(sessionToken);
-      console.log('🔑 Session token set for WebSocket authentication:', sessionToken.substring(0, 8) + '...');
-    } else {
-      console.warn('⚠️ No session token found, WebSocket will not be authenticated');
-    }
+    // DON'T set session token here - it will be set when connect() is called
+    // Session token is stored and will be retrieved by BaseWebSocketClient.connect()
+    console.log('🔍 Session token available:', sessionToken ? 'YES' : 'NO');
 
     // Set up event handlers
     wsClient.current.onConnected(() => {
