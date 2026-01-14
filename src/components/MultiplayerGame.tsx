@@ -202,7 +202,7 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         setMultiplayerState(MultiplayerState.LOBBY);
       } else if (currentStateRef.current === MultiplayerState.CONNECTING) {
         // We're connecting for a specific mode - state will be updated by mode selection useEffect
-        console.log('🔄 Connection established, waiting for mode selection to complete');
+        console.log('🔄 Connection established, waiting for mode selection to complete. Selected mode:', selectedMode, 'Game code:', gameCode);
       } else {
         // No mode selected yet - go to mode selection
         console.log('📋 No mode selected - showing mode selection');
@@ -709,7 +709,7 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       console.log('🎲 Random match mode - going to lobby');
       setMultiplayerState(MultiplayerState.LOBBY);
     }
-  }, [selectedMode, gameCode, multiplayerState, humanPlayer]);
+  }, [selectedMode, gameCode, multiplayerState]);
 
   // Reversal countdown timer
   useEffect(() => {
@@ -998,30 +998,37 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   };
 
   const handleModeSelect = useCallback((mode: MultiplayerMode, code?: string) => {
+    console.log('🎯 handleModeSelect called with mode:', mode, 'code:', code);
     setSelectedMode(mode);
     
     if (mode === MultiplayerMode.RANDOM_MATCH) {
       // Rastgele eşleşme - mevcut sistem
+      console.log('🎲 RANDOM_MATCH selected, transitioning to CONNECTING');
       setMultiplayerState(MultiplayerState.CONNECTING);
       // Start WebSocket connection
       if (wsClient.current && !wsClient.current.isConnected()) {
+        console.log('🔌 Starting WebSocket connection for RANDOM_MATCH');
         wsClient.current.connect();
       }
     } else if (mode === MultiplayerMode.CREATE_GAME) {
       // Oyun oluştur - kod üret ve bağlan
       const newCode = generateGameCode();
+      console.log('🎮 CREATE_GAME selected, generated code:', newCode);
       setGameCode(newCode);
       setMultiplayerState(MultiplayerState.CONNECTING);
       // Start WebSocket connection
       if (wsClient.current && !wsClient.current.isConnected()) {
+        console.log('🔌 Starting WebSocket connection for CREATE_GAME');
         wsClient.current.connect();
       }
     } else if (mode === MultiplayerMode.JOIN_GAME && code) {
       // Oyun ara - koda katıl
+      console.log('🔍 JOIN_GAME selected with code:', code);
       setGameCode(code);
       setMultiplayerState(MultiplayerState.CONNECTING);
       // Start WebSocket connection
       if (wsClient.current && !wsClient.current.isConnected()) {
+        console.log('🔌 Starting WebSocket connection for JOIN_GAME');
         wsClient.current.connect();
       }
     }
