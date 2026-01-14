@@ -72,9 +72,14 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   
   // Wrap setState to log all state changes
   const setMultiplayerState = useCallback((newState: MultiplayerState) => {
-    console.log('🔄 State transition:', multiplayerState, '->', newState, 'Stack:', new Error().stack?.split('\n')[2]);
+    console.log('🔄 State transition: -> ', newState);
+    const stack = new Error().stack;
+    if (stack) {
+      const caller = stack.split('\n')[2];
+      console.log('   Called from:', caller?.trim());
+    }
     setMultiplayerStateInternal(newState);
-  }, [multiplayerState]);
+  }, []); // Empty deps - function never changes
   
   console.log('🎮 MultiplayerGame mounted with initial state:', tournamentContext ? 'IN_GAME' : 'MODE_SELECTION');
   
