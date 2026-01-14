@@ -66,9 +66,17 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     createdAt: user.createdAt,
   });
 
-  const [multiplayerState, setMultiplayerState] = useState<MultiplayerState>(
+  const [multiplayerState, setMultiplayerStateInternal] = useState<MultiplayerState>(
     tournamentContext ? MultiplayerState.IN_GAME : MultiplayerState.MODE_SELECTION
   );
+  
+  // Wrap setState to log all state changes
+  const setMultiplayerState = useCallback((newState: MultiplayerState) => {
+    console.log('🔄 State transition:', multiplayerState, '->', newState, 'Stack:', new Error().stack?.split('\n')[2]);
+    setMultiplayerStateInternal(newState);
+  }, [multiplayerState]);
+  
+  console.log('🎮 MultiplayerGame mounted with initial state:', tournamentContext ? 'IN_GAME' : 'MODE_SELECTION');
   
   const [selectedMode, setSelectedMode] = useState<MultiplayerMode | null>(null);
   const [gameCode, setGameCode] = useState<string | null>(null);
