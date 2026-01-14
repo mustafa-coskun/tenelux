@@ -66,22 +66,9 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     createdAt: user.createdAt,
   });
 
-  const [multiplayerState, setMultiplayerStateInternal] = useState<MultiplayerState>(
+  const [multiplayerState, setMultiplayerState] = useState<MultiplayerState>(
     tournamentContext ? MultiplayerState.IN_GAME : MultiplayerState.MODE_SELECTION
   );
-  
-  // Wrap setState to log all state changes
-  const setMultiplayerState = useCallback((newState: MultiplayerState) => {
-    console.log('🔄 State transition: -> ', newState);
-    const stack = new Error().stack;
-    if (stack) {
-      const caller = stack.split('\n')[2];
-      console.log('   Called from:', caller?.trim());
-    }
-    setMultiplayerStateInternal(newState);
-  }, []); // Empty deps - function never changes
-  
-  console.log('🎮 MultiplayerGame mounted with initial state:', tournamentContext ? 'IN_GAME' : 'MODE_SELECTION');
   
   const [selectedMode, setSelectedMode] = useState<MultiplayerMode | null>(null);
   const [gameCode, setGameCode] = useState<string | null>(null);
@@ -214,8 +201,7 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       } else if (tournamentContext) {
         setMultiplayerState(MultiplayerState.LOBBY);
       } else if (currentStateRef.current === MultiplayerState.CONNECTING) {
-        // We're connecting for a specific mode - state will be updated by mode selection useEffect
-        console.log('🔄 Connection established, waiting for mode selection to complete. Selected mode:', selectedMode, 'Game code:', gameCode);
+        console.log('🔄 Connected while in CONNECTING state, mode:', selectedMode);
       } else {
         // No mode selected yet - go to mode selection
         console.log('📋 No mode selected - showing mode selection');
@@ -1011,37 +997,25 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   };
 
   const handleModeSelect = useCallback((mode: MultiplayerMode, code?: string) => {
-    console.log('🎯 handleModeSelect called with mode:', mode, 'code:', code);
+    console.log('🎯 Mode selected:', mode, code ? `with code: ${code}` : '');
     setSelectedMode(mode);
     
     if (mode === MultiplayerMode.RANDOM_MATCH) {
-      // Rastgele eşleşme - mevcut sistem
-      console.log('🎲 RANDOM_MATCH selected, transitioning to CONNECTING');
       setMultiplayerState(MultiplayerState.CONNECTING);
-      // Start WebSocket connection
       if (wsClient.current && !wsClient.current.isConnected()) {
-        console.log('🔌 Starting WebSocket connection for RANDOM_MATCH');
         wsClient.current.connect();
       }
     } else if (mode === MultiplayerMode.CREATE_GAME) {
-      // Oyun oluştur - kod üret ve bağlan
       const newCode = generateGameCode();
-      console.log('🎮 CREATE_GAME selected, generated code:', newCode);
       setGameCode(newCode);
       setMultiplayerState(MultiplayerState.CONNECTING);
-      // Start WebSocket connection
       if (wsClient.current && !wsClient.current.isConnected()) {
-        console.log('🔌 Starting WebSocket connection for CREATE_GAME');
         wsClient.current.connect();
       }
     } else if (mode === MultiplayerMode.JOIN_GAME && code) {
-      // Oyun ara - koda katıl
-      console.log('🔍 JOIN_GAME selected with code:', code);
       setGameCode(code);
       setMultiplayerState(MultiplayerState.CONNECTING);
-      // Start WebSocket connection
       if (wsClient.current && !wsClient.current.isConnected()) {
-        console.log('🔌 Starting WebSocket connection for JOIN_GAME');
         wsClient.current.connect();
       }
     }
