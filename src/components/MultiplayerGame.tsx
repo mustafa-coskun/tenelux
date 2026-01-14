@@ -859,7 +859,12 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         matchId: currentMatchId
       });
       
-      // Return to main menu immediately
+      // Wait a bit for message to be sent before returning to menu
+      setTimeout(() => {
+        onGameEnd('forfeit');
+      }, 100);
+    } else {
+      // No active match, just return to menu
       onGameEnd('forfeit');
     }
   };

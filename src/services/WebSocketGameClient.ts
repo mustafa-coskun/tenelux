@@ -220,6 +220,12 @@ export class WebSocketGameClient extends BaseWebSocketClient {
         }
         break;
 
+      case 'FORFEIT_CONFIRMED':
+        console.log('🏳️ Multiplayer Client - Forfeit confirmed');
+        // Forfeit confirmed - player has left the match
+        // No need to do anything, player already returned to menu
+        break;
+
       case 'ERROR':
         console.error('❌ Multiplayer Client - Server error:', message.message);
         if (this.onErrorHandler) {
