@@ -14,7 +14,7 @@ console.log('Starting simple server...');
 
 const app = express();
 const server = http.createServer(app);
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Global variables
 let dbManager = null;

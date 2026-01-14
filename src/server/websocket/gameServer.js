@@ -258,30 +258,43 @@ class GameServer {
 
                 // If session token provided, validate it
                 if (data.sessionToken && this.dbManager) {
-                    try {
-                        const sessionRepo = this.dbManager.getSessionRepository();
-                        const session = await sessionRepo.findByToken(data.sessionToken);
-                        if (session && session.isActive) {
-                            // Update session last used
-                            await sessionRepo.updateLastUsed(session.id);
-                            ws.userId = session.userId;
-                            ws.isAuthenticated = true;
-                            if (this.logger) {
-                                this.logger.debug('WebSocket authenticated with session', {
-                                    clientId: ws.clientId,
-                                    userId: ws.userId
-                                });
+                    // Guest sessions don't need database validation
+                    if (data.sessionToken.startsWith('guest_')) {
+                        ws.isAuthenticated = false; // Guests are not authenticated users
+                        ws.userId = data.sessionToken; // Use session token as userId for guests
+                        if (this.logger) {
+                            this.logger.debug('Guest session accepted', {
+                                clientId: ws.clientId,
+                                guestId: ws.userId
+                            });
+                        }
+                    } else {
+                        // Regular user session - validate against database
+                        try {
+                            const sessionRepo = this.dbManager.getSessionRepository();
+                            const session = await sessionRepo.findByToken(data.sessionToken);
+                            if (session && session.isActive) {
+                                // Update session last used
+                                await sessionRepo.updateLastUsed(session.id);
+                                ws.userId = session.userId;
+                                ws.isAuthenticated = true;
+                                if (this.logger) {
+                                    this.logger.debug('WebSocket authenticated with session', {
+                                        clientId: ws.clientId,
+                                        userId: ws.userId
+                                    });
+                                }
+                            } else {
+                                ws.isAuthenticated = false;
+                                if (this.logger) {
+                                    this.logger.warn('Invalid session token provided', { clientId: ws.clientId });
+                                }
                             }
-                        } else {
+                        } catch (error) {
                             ws.isAuthenticated = false;
                             if (this.logger) {
-                                this.logger.warn('Invalid session token provided', { clientId: ws.clientId });
+                                this.logger.error('Session validation error', error);
                             }
-                        }
-                    } catch (error) {
-                        ws.isAuthenticated = false;
-                        if (this.logger) {
-                            this.logger.error('Session validation error', error);
                         }
                     }
                 } else {
