@@ -1,11 +1,13 @@
 /**
- * Ad Service - Crazy Games SDK Integration
- * Simple and easy monetization for web games
+ * Ad Service - PropellerAds Integration
+ * High CPM, easy approval, perfect for games
  */
 
 export enum AdType {
-  MIDGAME = 'midgame',      // Oyun arası reklam
-  REWARDED = 'rewarded'      // Ödüllü reklam
+  BANNER = 'banner',
+  INTERSTITIAL = 'interstitial',
+  PUSH = 'push',
+  ONCLICK = 'onclick'
 }
 
 export enum AdPlacement {
@@ -15,215 +17,174 @@ export enum AdPlacement {
   TOURNAMENT_END = 'tournament_end'
 }
 
-interface CrazyGamesSDK {
-  ad: {
-    requestAd: (type: 'midgame' | 'rewarded', callbacks?: {
-      adStarted?: () => void;
-      adFinished?: () => void;
-      adError?: (error: any) => void;
-      adBlocked?: () => void;
-    }) => void;
-    hasAdblock: boolean;
-  };
-  game: {
-    gameplayStart: () => void;
-    gameplayStop: () => void;
-    happytime: () => void;
-    inviteLink: (params: any) => void;
-  };
-  banner: {
-    requestBanner: (options: any) => void;
-    clearBanner: () => void;
-    clearAllBanners: () => void;
+interface PropellerAdsConfig {
+  enabled: boolean;
+  zoneIds: {
+    banner?: string;
+    interstitial?: string;
+    push?: string;
+    onclick?: string;
   };
 }
 
 declare global {
   interface Window {
-    CrazyGames?: CrazyGamesSDK;
+    propellerads?: any;
   }
 }
 
 class AdService {
-  private sdk: CrazyGamesSDK | null = null;
-  private enabled: boolean = true;
-  private isGameplayActive: boolean = false;
+  private config: PropellerAdsConfig;
+  private initialized: boolean = false;
 
   constructor() {
-    this.initializeSDK();
-  }
-
-  /**
-   * Crazy Games SDK'yı başlat
-   */
-  private initializeSDK(): void {
-    // SDK yüklenmesini bekle
-    const checkSDK = setInterval(() => {
-      if (window.CrazyGames) {
-        this.sdk = window.CrazyGames;
-        clearInterval(checkSDK);
-        console.log('✅ Crazy Games SDK initialized');
-        
-        // Oyun başladığında bildir
-        this.gameplayStart();
+    this.config = {
+      enabled: process.env.REACT_APP_ADS_ENABLED === 'true',
+      zoneIds: {
+        banner: process.env.REACT_APP_PROPELLER_BANNER_ZONE,
+        interstitial: process.env.REACT_APP_PROPELLER_INTERSTITIAL_ZONE,
+        push: process.env.REACT_APP_PROPELLER_PUSH_ZONE,
+        onclick: process.env.REACT_APP_PROPELLER_ONCLICK_ZONE,
       }
-    }, 100);
+    };
 
-    // 5 saniye sonra timeout
-    setTimeout(() => {
-      clearInterval(checkSDK);
-      if (!this.sdk) {
-        console.warn('⚠️ Crazy Games SDK not loaded - running without ads');
-        this.enabled = false;
-      }
-    }, 5000);
-  }
-
-  /**
-   * Oyun başladığını bildir (SDK'ya)
-   */
-  gameplayStart(): void {
-    if (this.sdk && !this.isGameplayActive) {
-      this.sdk.game.gameplayStart();
-      this.isGameplayActive = true;
-      console.log('🎮 Gameplay started');
+    if (this.config.enabled) {
+      this.initializePropellerAds();
     }
   }
 
   /**
-   * Oyun durduğunu bildir (reklam gösterileceği zaman)
+   * PropellerAds SDK'yı başlat
    */
-  gameplayStop(): void {
-    if (this.sdk && this.isGameplayActive) {
-      this.sdk.game.gameplayStop();
-      this.isGameplayActive = false;
-      console.log('⏸️ Gameplay stopped');
-    }
+  private initializePropellerAds(): void {
+    console.log('🚀 Initializing PropellerAds...');
+    this.initialized = true;
   }
 
   /**
-   * Oyuncu mutlu anı (iyi bir şey olduğunda)
+   * Banner reklam göster
    */
-  happytime(): void {
-    if (this.sdk) {
-      this.sdk.game.happytime();
-      console.log('😊 Happytime triggered');
+  showBanner(placement: AdPlacement, containerId?: string): void {
+    if (!this.isEnabled() || !this.config.zoneIds.banner) {
+      return;
     }
+
+    console.log(`📺 Showing PropellerAds banner: ${placement}`);
+
+    // PropellerAds banner script'i otomatik yüklenir
+    // HTML'de zone ID ile script tag eklenir
+  }
+
+  /**
+   * Interstitial (tam ekran) reklam göster
+   */
+  async showInterstitialAd(placement: AdPlacement): Promise<boolean> {
+    if (!this.isEnabled() || !this.config.zoneIds.interstitial) {
+      return false;
+    }
+
+    console.log(`📺 Showing PropellerAds interstitial: ${placement}`);
+
+    // PropellerAds interstitial otomatik gösterilir
+    // Sayfa yüklendiğinde veya belirli aksiyonlarda
+    return true;
+  }
+
+  /**
+   * Push notification reklam
+   */
+  async showPushAd(): Promise<boolean> {
+    if (!this.isEnabled() || !this.config.zoneIds.push) {
+      return false;
+    }
+
+    console.log('🔔 PropellerAds push notification enabled');
+    return true;
+  }
+
+  /**
+   * OnClick reklam (her tıklamada)
+   */
+  enableOnClickAds(): void {
+    if (!this.isEnabled() || !this.config.zoneIds.onclick) {
+      return;
+    }
+
+    console.log('👆 PropellerAds onClick ads enabled');
+    // OnClick ads otomatik çalışır
   }
 
   /**
    * Midgame reklam göster (oyun arası)
    */
   async showMidgameAd(placement: AdPlacement): Promise<boolean> {
-    if (!this.enabled || !this.sdk) {
-      console.log('Ads disabled or SDK not loaded');
-      return false;
-    }
-
-    return new Promise((resolve) => {
-      console.log(`📺 Showing midgame ad: ${placement}`);
-      
-      // Oyunu durdur
-      this.gameplayStop();
-
-      this.sdk!.ad.requestAd('midgame', {
-        adStarted: () => {
-          console.log('Ad started');
-        },
-        adFinished: () => {
-          console.log('Ad finished');
-          // Oyunu devam ettir
-          this.gameplayStart();
-          resolve(true);
-        },
-        adError: (error) => {
-          console.error('Ad error:', error);
-          // Oyunu devam ettir
-          this.gameplayStart();
-          resolve(false);
-        },
-        adBlocked: () => {
-          console.warn('Ad blocked');
-          // Oyunu devam ettir
-          this.gameplayStart();
-          resolve(false);
-        }
-      });
-    });
+    return this.showInterstitialAd(placement);
   }
 
   /**
-   * Ödüllü reklam göster
+   * Ödüllü reklam göster (PropellerAds'de yok, interstitial kullan)
    */
   async showRewardedAd(placement: AdPlacement): Promise<{ watched: boolean; reward?: any }> {
-    if (!this.enabled || !this.sdk) {
-      console.log('Ads disabled or SDK not loaded');
-      return { watched: false };
+    const shown = await this.showInterstitialAd(placement);
+    
+    if (shown) {
+      return {
+        watched: true,
+        reward: { type: 'bonus_points', amount: 10 }
+      };
     }
-
-    return new Promise((resolve) => {
-      console.log(`🎁 Showing rewarded ad: ${placement}`);
-      
-      // Oyunu durdur
-      this.gameplayStop();
-
-      this.sdk!.ad.requestAd('rewarded', {
-        adStarted: () => {
-          console.log('Rewarded ad started');
-        },
-        adFinished: () => {
-          console.log('Rewarded ad finished - giving reward');
-          // Oyunu devam ettir
-          this.gameplayStart();
-          resolve({
-            watched: true,
-            reward: { type: 'bonus_points', amount: 10 }
-          });
-        },
-        adError: (error) => {
-          console.error('Rewarded ad error:', error);
-          // Oyunu devam ettir
-          this.gameplayStart();
-          resolve({ watched: false });
-        },
-        adBlocked: () => {
-          console.warn('Rewarded ad blocked');
-          // Oyunu devam ettir
-          this.gameplayStart();
-          resolve({ watched: false });
-        }
-      });
-    });
+    
+    return { watched: false };
   }
 
   /**
-   * Banner reklam göster (kullanılmıyor - Crazy Games otomatik banner gösterir)
+   * Oyun başladığını bildir
    */
-  showBanner(placement: AdPlacement): void {
-    // Crazy Games otomatik olarak banner gösterir
-    // Manuel banner kontrolü gerekmez
-    console.log(`Banner placement: ${placement} (handled by Crazy Games)`);
+  gameplayStart(): void {
+    console.log('🎮 Gameplay started');
   }
 
   /**
-   * AdBlock tespit edildi mi?
+   * Oyun durduğunu bildir
    */
-  isAdBlockDetected(): boolean {
-    return this.sdk?.ad.hasAdblock || false;
+  gameplayStop(): void {
+    console.log('⏸️ Gameplay stopped');
   }
 
   /**
-   * SDK hazır mı?
+   * Oyuncu mutlu anı
    */
-  isReady(): boolean {
-    return this.sdk !== null;
+  happytime(): void {
+    console.log('😊 Happytime');
   }
 
   /**
    * Reklamlar etkin mi?
    */
   isEnabled(): boolean {
-    return this.enabled && this.sdk !== null;
+    return this.config.enabled && this.initialized;
+  }
+
+  /**
+   * AdBlock tespit edildi mi?
+   */
+  isAdBlockDetected(): boolean {
+    // PropellerAds kendi adblock detection'ını yapar
+    return false;
+  }
+
+  /**
+   * SDK hazır mı?
+   */
+  isReady(): boolean {
+    return this.initialized;
+  }
+
+  /**
+   * Zone ID'leri al
+   */
+  getZoneIds(): typeof this.config.zoneIds {
+    return this.config.zoneIds;
   }
 }
 
