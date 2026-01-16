@@ -51,17 +51,7 @@ class AdService {
     }
 
     console.log(`📺 Ad placement: ${placement}`);
-    
-    // Banner container'ı oluştur
-    if (containerId) {
-      const container = document.getElementById(containerId);
-      if (container && !container.querySelector('.ad-banner-container')) {
-        const adDiv = document.createElement('div');
-        adDiv.className = 'ad-banner-container';
-        adDiv.id = 'container-9196e6763947fb8d0642f00e554da8ff';
-        container.appendChild(adDiv);
-      }
-    }
+    // Banner container zaten AdBanner component'inde oluşturuldu
   }
 
   /**
