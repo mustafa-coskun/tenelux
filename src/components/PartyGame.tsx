@@ -1399,10 +1399,18 @@ const PartyGame: React.FC<PartyGameProps> = ({ humanPlayer, onGameEnd }) => {
     console.log('🏳️ Current state:', { 
       currentLobby: !!currentLobby, 
       currentTournamentData: !!currentTournamentData,
-      currentMatch: !!currentMatch 
+      currentMatch: !!currentMatch,
+      tournamentStatus: currentTournamentData?.status
     });
     
-    // If in tournament, DON'T go back to main menu
+    // If tournament is completed, allow going back to main menu
+    if (currentTournamentData?.status === 'completed') {
+      console.log('🏳️ Tournament completed - going to main menu');
+      onGameEnd();
+      return;
+    }
+    
+    // If in active tournament, DON'T go back to main menu
     if (currentTournamentData || currentPhase === PartyGamePhase.TOURNAMENT) {
       console.log('🏳️ *** TOURNAMENT ACTIVE - NOT GOING TO MAIN MENU ***');
       // Stay in tournament, just clear match if any
