@@ -28,6 +28,11 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Server is working!' });
 });
 
+// Ezoic ads.txt redirect
+app.get('/ads.txt', (req, res) => {
+  res.redirect(301, 'https://srv.adstxtmanager.com/6170144175424873/tenelux.site');
+});
+
 // Import and use auth routes
 try {
   console.log('Loading auth routes...');
