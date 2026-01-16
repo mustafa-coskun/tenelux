@@ -704,7 +704,7 @@ const PartyLobby: React.FC<PartyLobbyProps> = ({
           </div>
           {/* Advertisement while waiting */}
           <div className="lobby-ad">
-            <AdBanner placement={AdPlacement.LOBBY_WAITING} />
+            <AdBanner placement={AdPlacement.ROUND_END} />
           </div>
         </>
       )}

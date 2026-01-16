@@ -400,7 +400,7 @@ const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
 
       {/* Advertisement - Game End */}
       <div className="statistics-ad">
-        <AdBanner placement={AdPlacement.STATISTICS_PANEL} />
+        <AdBanner placement={AdPlacement.GAME_END} />
       </div>
 
     </div>
