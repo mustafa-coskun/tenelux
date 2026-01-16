@@ -55,7 +55,7 @@ export const RewardedAdButton: React.FC<RewardedAdButtonProps> = ({
   };
 
   // Reklam gösterilmeyecekse butonu gösterme
-  if (!adService.shouldShowAd(placement)) {
+  if (!adService.isEnabled()) {
     return null;
   }
 

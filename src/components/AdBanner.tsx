@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { adService, AdPlacement } from '../services/AdService';
 import './AdBanner.css';
 
@@ -9,44 +9,27 @@ interface AdBannerProps {
 }
 
 /**
- * Banner reklam component'i
- * Kullanım: <AdBanner placement={AdPlacement.SIDEBAR} />
+ * Banner reklam component'i - Crazy Games SDK
+ * Note: Crazy Games automatically shows banners, this is just a placeholder
  */
 export const AdBanner: React.FC<AdBannerProps> = ({ placement, className = '', style = {} }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const containerId = `ad-banner-${placement}`;
-
   useEffect(() => {
-    // Component mount olduğunda reklamı yükle - AdSense policy compliance ile
-    const timer = setTimeout(() => {
-      // Çift kontrol: hem placement hem de sayfa uygunluğu
-      if (adService.shouldShowAd(placement) && adService.isPageAdSenseCompliant()) {
-        adService.loadBannerAd(placement, containerId);
-      } else {
-        console.log('Ad blocked for AdSense policy compliance:', placement);
-      }
-    }, 100);
+    // Crazy Games SDK handles banners automatically
+    adService.showBanner(placement);
+  }, [placement]);
 
-    // Cleanup
-    return () => {
-      clearTimeout(timer);
-      adService.clearAd(containerId);
-    };
-  }, [placement, containerId]);
-
-  // Reklam gösterilmeyecekse component'i render etme
-  if (!adService.shouldShowAd(placement) || !adService.isPageAdSenseCompliant()) {
+  // Crazy Games SDK otomatik banner gösterir
+  // Bu component sadece uyumluluk için
+  if (!adService.isEnabled()) {
     return null;
   }
 
   return (
     <div 
-      ref={containerRef}
-      id={containerId}
       className={`ad-banner ${className}`}
       style={style}
     >
-      {/* Reklam yüklenirken placeholder */}
+      {/* Crazy Games SDK otomatik banner gösterir */}
       <div className="ad-placeholder">
         <span>Advertisement</span>
       </div>
