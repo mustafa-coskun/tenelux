@@ -1,140 +1,103 @@
 /**
- * Ad Service - PropellerAds Integration
- * High CPM, easy approval, perfect for games
+ * Ad Service - Ezoic Integration
+ * AI-powered ad optimization with clean, contextual ads
+ * Higher revenue than AdSense, automatic optimization
  */
 
 export enum AdType {
   BANNER = 'banner',
-  INTERSTITIAL = 'interstitial',
-  PUSH = 'push',
-  ONCLICK = 'onclick'
+  DISPLAY = 'display',
+  NATIVE = 'native'
 }
 
 export enum AdPlacement {
   MAIN_MENU = 'main_menu',
   GAME_END = 'game_end',
   ROUND_END = 'round_end',
-  TOURNAMENT_END = 'tournament_end'
+  TOURNAMENT_END = 'tournament_end',
+  SIDEBAR = 'sidebar'
 }
 
-interface PropellerAdsConfig {
+interface EzoicConfig {
   enabled: boolean;
-  zoneIds: {
-    banner?: string;
-    interstitial?: string;
-    push?: string;
-    onclick?: string;
-  };
+  siteId: string;
 }
 
 declare global {
   interface Window {
-    propellerads?: any;
+    ezstandalone?: any;
+    ezoicTestActive?: boolean;
   }
 }
 
 class AdService {
-  private config: PropellerAdsConfig;
+  private config: EzoicConfig;
   private initialized: boolean = false;
 
   constructor() {
     this.config = {
       enabled: process.env.REACT_APP_ADS_ENABLED === 'true',
-      zoneIds: {
-        banner: process.env.REACT_APP_PROPELLER_BANNER_ZONE,
-        interstitial: process.env.REACT_APP_PROPELLER_INTERSTITIAL_ZONE,
-        push: process.env.REACT_APP_PROPELLER_PUSH_ZONE,
-        onclick: process.env.REACT_APP_PROPELLER_ONCLICK_ZONE,
-      }
+      siteId: process.env.REACT_APP_EZOIC_SITE_ID || '',
     };
 
     if (this.config.enabled) {
-      this.initializePropellerAds();
+      this.initializeEzoic();
     }
   }
 
   /**
-   * PropellerAds SDK'yı başlat
+   * Ezoic SDK'yı başlat
    */
-  private initializePropellerAds(): void {
-    console.log('🚀 Initializing PropellerAds...');
+  private initializeEzoic(): void {
+    console.log('🎯 Initializing Ezoic...');
+    
+    // Ezoic automatically handles ad placement via their script
+    // No manual initialization needed
     this.initialized = true;
   }
 
   /**
    * Banner reklam göster
+   * Ezoic otomatik olarak en iyi yerlere reklam koyar
    */
   showBanner(placement: AdPlacement, containerId?: string): void {
-    if (!this.isEnabled() || !this.config.zoneIds.banner) {
+    if (!this.isEnabled()) {
       return;
     }
 
-    console.log(`📺 Showing PropellerAds banner: ${placement}`);
-
-    // PropellerAds banner script'i otomatik yüklenir
-    // HTML'de zone ID ile script tag eklenir
-  }
-
-  /**
-   * Interstitial (tam ekran) reklam göster
-   */
-  async showInterstitialAd(placement: AdPlacement): Promise<boolean> {
-    if (!this.isEnabled() || !this.config.zoneIds.interstitial) {
-      return false;
-    }
-
-    console.log(`📺 Showing PropellerAds interstitial: ${placement}`);
-
-    // PropellerAds interstitial otomatik gösterilir
-    // Sayfa yüklendiğinde veya belirli aksiyonlarda
-    return true;
-  }
-
-  /**
-   * Push notification reklam
-   */
-  async showPushAd(): Promise<boolean> {
-    if (!this.isEnabled() || !this.config.zoneIds.push) {
-      return false;
-    }
-
-    console.log('🔔 PropellerAds push notification enabled');
-    return true;
-  }
-
-  /**
-   * OnClick reklam (her tıklamada)
-   */
-  enableOnClickAds(): void {
-    if (!this.isEnabled() || !this.config.zoneIds.onclick) {
-      return;
-    }
-
-    console.log('👆 PropellerAds onClick ads enabled');
-    // OnClick ads otomatik çalışır
+    console.log(`📺 Ezoic handling ad placement: ${placement}`);
+    // Ezoic AI automatically places ads in optimal locations
   }
 
   /**
    * Midgame reklam göster (oyun arası)
    */
   async showMidgameAd(placement: AdPlacement): Promise<boolean> {
-    return this.showInterstitialAd(placement);
+    if (!this.isEnabled()) {
+      return false;
+    }
+
+    console.log(`🎮 Ad opportunity at: ${placement}`);
+    // Ezoic handles this automatically
+    return true;
   }
 
   /**
-   * Ödüllü reklam göster (PropellerAds'de yok, interstitial kullan)
+   * Ödüllü reklam göster
    */
   async showRewardedAd(placement: AdPlacement): Promise<{ watched: boolean; reward?: any }> {
-    const shown = await this.showInterstitialAd(placement);
-    
-    if (shown) {
-      return {
-        watched: true,
-        reward: { type: 'bonus_points', amount: 10 }
-      };
+    if (!this.isEnabled()) {
+      return { watched: false };
     }
+
+    console.log(`🎁 Rewarded ad at: ${placement}`);
     
-    return { watched: false };
+    // Ezoic doesn't have traditional rewarded ads
+    // But we can still give rewards for engagement
+    return {
+      watched: true,
+      reward: { type: 'bonus_points', amount: 10 }
+    };
   }
 
   /**
@@ -169,8 +132,8 @@ class AdService {
    * AdBlock tespit edildi mi?
    */
   isAdBlockDetected(): boolean {
-    // PropellerAds kendi adblock detection'ını yapar
-    return false;
+    // Ezoic has built-in adblock detection
+    return window.ezoicTestActive === false;
   }
 
   /**
@@ -181,10 +144,10 @@ class AdService {
   }
 
   /**
-   * Zone ID'leri al
+   * Site ID al
    */
-  getZoneIds(): typeof this.config.zoneIds {
-    return this.config.zoneIds;
+  getSiteId(): string {
+    return this.config.siteId;
   }
 }
 
