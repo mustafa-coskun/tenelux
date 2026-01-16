@@ -9,30 +9,26 @@ interface AdBannerProps {
 }
 
 /**
- * Banner reklam component'i - Crazy Games SDK
- * Note: Crazy Games automatically shows banners, this is just a placeholder
+ * Banner reklam component'i
+ * Ana menü, oyun sonu, turnuva sonu gibi yerlerde gösterilir
  */
 export const AdBanner: React.FC<AdBannerProps> = ({ placement, className = '', style = {} }) => {
   useEffect(() => {
-    // Crazy Games SDK handles banners automatically
-    adService.showBanner(placement);
+    adService.showBanner(placement, `ad-container-${placement}`);
   }, [placement]);
 
-  // Crazy Games SDK otomatik banner gösterir
-  // Bu component sadece uyumluluk için
   if (!adService.isEnabled()) {
     return null;
   }
 
   return (
     <div 
+      id={`ad-container-${placement}`}
       className={`ad-banner ${className}`}
       style={style}
     >
-      {/* Crazy Games SDK otomatik banner gösterir */}
-      <div className="ad-placeholder">
-        <span>Advertisement</span>
-      </div>
+      {/* Banner reklamı buraya yüklenecek */}
+      <div id="container-9196e6763947fb8d0642f00e554da8ff"></div>
     </div>
   );
 };

@@ -1,7 +1,5 @@
 /**
- * Ad Service - Ezoic Integration
- * AI-powered ad optimization with clean, contextual ads
- * Higher revenue than AdSense, automatic optimization
+ * Ad Service - Banner Ad Integration
  */
 
 export enum AdType {
@@ -18,55 +16,52 @@ export enum AdPlacement {
   SIDEBAR = 'sidebar'
 }
 
-interface EzoicConfig {
+interface AdConfig {
   enabled: boolean;
-  siteId: string;
-}
-
-declare global {
-  interface Window {
-    ezstandalone?: any;
-    ezoicTestActive?: boolean;
-  }
 }
 
 class AdService {
-  private config: EzoicConfig;
+  private config: AdConfig;
   private initialized: boolean = false;
 
   constructor() {
     this.config = {
       enabled: process.env.REACT_APP_ADS_ENABLED === 'true',
-      siteId: process.env.REACT_APP_EZOIC_SITE_ID || '',
     };
 
     if (this.config.enabled) {
-      this.initializeEzoic();
+      this.initialize();
     }
   }
 
   /**
-   * Ezoic SDK'yı başlat
+   * Ad service'i başlat
    */
-  private initializeEzoic(): void {
-    console.log('🎯 Initializing Ezoic...');
-    
-    // Ezoic automatically handles ad placement via their script
-    // No manual initialization needed
+  private initialize(): void {
+    console.log('🎯 Ad service initialized');
     this.initialized = true;
   }
 
   /**
    * Banner reklam göster
-   * Ezoic otomatik olarak en iyi yerlere reklam koyar
    */
   showBanner(placement: AdPlacement, containerId?: string): void {
     if (!this.isEnabled()) {
       return;
     }
 
-    console.log(`📺 Ezoic handling ad placement: ${placement}`);
-    // Ezoic AI automatically places ads in optimal locations
+    console.log(`📺 Ad placement: ${placement}`);
+    
+    // Banner container'ı oluştur
+    if (containerId) {
+      const container = document.getElementById(containerId);
+      if (container && !container.querySelector('.ad-banner-container')) {
+        const adDiv = document.createElement('div');
+        adDiv.className = 'ad-banner-container';
+        adDiv.id = 'container-9196e6763947fb8d0642f00e554da8ff';
+        container.appendChild(adDiv);
+      }
+    }
   }
 
   /**
@@ -78,7 +73,6 @@ class AdService {
     }
 
     console.log(`🎮 Ad opportunity at: ${placement}`);
-    // Ezoic handles this automatically
     return true;
   }
 
@@ -92,8 +86,6 @@ class AdService {
 
     console.log(`🎁 Rewarded ad at: ${placement}`);
     
-    // Ezoic doesn't have traditional rewarded ads
-    // But we can still give rewards for engagement
     return {
       watched: true,
       reward: { type: 'bonus_points', amount: 10 }
@@ -132,8 +124,7 @@ class AdService {
    * AdBlock tespit edildi mi?
    */
   isAdBlockDetected(): boolean {
-    // Ezoic has built-in adblock detection
-    return window.ezoicTestActive === false;
+    return false;
   }
 
   /**
@@ -141,13 +132,6 @@ class AdService {
    */
   isReady(): boolean {
     return this.initialized;
-  }
-
-  /**
-   * Site ID al
-   */
-  getSiteId(): string {
-    return this.config.siteId;
   }
 }
 
