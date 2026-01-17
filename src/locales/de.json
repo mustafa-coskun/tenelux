@@ -21,6 +21,11 @@
     "partyMode": "Party-Modus",
     "tutorial": "Anleitung"
   },
+  "video": {
+    "howToPlay": "Wie spielt man?",
+    "watchVideo": "Video ansehen",
+    "browserNotSupported": "Ihr Browser unterstützt die Videowiedergabe nicht"
+  },
   "partyModeInfo": {
     "description": "Turnier-Modus für 4-16 Spieler mit Turnierplan und Statistiken",
     "welcome": "Willkommen im Party-Modus für Turnier-Mehrspieler-Spiele!",

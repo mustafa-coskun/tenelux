@@ -1,0 +1,39 @@
+1
+00:00:00,352 --> 00:00:02,488
+Oyuncular birbirine karşı oynar. Her
+
+2
+00:00:02,488 --> 00:00:05,335
+birinizin 2 seçeneği var. İşbirliği yapabilir
+
+3
+00:00:05,335 --> 00:00:07,868
+ya da ihanet edebilirsiniz. İkiniz de
+
+4
+00:00:07,868 --> 00:00:10,805
+işbirliği yaparsa, her biriniz 3 puan alır.
+
+5
+00:00:10,805 --> 00:00:12,763
+Biriniz işbirliği yapar diğeri ihanet ederse,
+
+6
+00:00:12,763 --> 00:00:15,700
+ihanet eden 5 puan alır ve diğeri
+
+7
+00:00:15,700 --> 00:00:17,984
+hiçbir şey alamaz. İkiniz de ihanet
+
+8
+00:00:17,984 --> 00:00:20,921
+ederseniz her biriniz 1 puan alır. Oyunun
+
+9
+00:00:20,921 --> 00:00:23,858
+amacı basit: mümkün olduğunca çok
+
+10
+00:00:23,858 --> 00:00:25,163
+puan toplamak.

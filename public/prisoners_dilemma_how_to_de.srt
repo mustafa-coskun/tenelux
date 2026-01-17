@@ -1,0 +1,39 @@
+1
+00:00:00,352 --> 00:00:02,488
+Spieler spielen gegeneinander. Jeder
+
+2
+00:00:02,488 --> 00:00:05,335
+von euch hat 2 Wahlmöglichkeiten. Ihr könnt
+
+3
+00:00:05,335 --> 00:00:07,868
+kooperieren oder verraten. Wenn ihr beide
+
+4
+00:00:07,868 --> 00:00:10,805
+kooperiert, bekommt jeder 3 Münzen.
+
+5
+00:00:10,805 --> 00:00:12,763
+Wenn einer kooperiert aber der andere verrät,
+
+6
+00:00:12,763 --> 00:00:15,700
+dann bekommt der Verräter 5 Münzen und
+
+7
+00:00:15,700 --> 00:00:17,984
+der andere nichts. Und wenn ihr beide
+
+8
+00:00:17,984 --> 00:00:20,921
+verratet, bekommt jeder eine Münze. Das Ziel
+
+9
+00:00:20,921 --> 00:00:23,858
+des Spiels ist einfach: so viele Münzen
+
+10
+00:00:23,858 --> 00:00:25,163
+wie möglich zu sammeln.

@@ -1,0 +1,39 @@
+1
+00:00:00,352 --> 00:00:02,488
+Les joueurs jouent l'un contre l'autre. Vous
+
+2
+00:00:02,488 --> 00:00:05,335
+avez chacun 2 choix. Vous pouvez coopérer
+
+3
+00:00:05,335 --> 00:00:07,868
+ou trahir. Si vous coopérez tous les deux,
+
+4
+00:00:07,868 --> 00:00:10,805
+vous obtenez chacun 3 pièces. Si l'un
+
+5
+00:00:10,805 --> 00:00:12,763
+coopère mais l'autre trahit, alors celui
+
+6
+00:00:12,763 --> 00:00:15,700
+qui a trahi obtient 5 pièces et l'autre
+
+7
+00:00:15,700 --> 00:00:17,984
+n'obtient rien. Et si vous trahissez tous
+
+8
+00:00:17,984 --> 00:00:20,921
+les deux, vous obtenez chacun une pièce. Le but
+
+9
+00:00:20,921 --> 00:00:23,858
+du jeu est simple : obtenir autant de
+
+10
+00:00:23,858 --> 00:00:25,163
+pièces que possible.

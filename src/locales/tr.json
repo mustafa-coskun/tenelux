@@ -143,6 +143,11 @@
     "partyMode": "Parti Modu",
     "tutorial": "Öğretici"
   },
+  "video": {
+    "howToPlay": "Nasıl Oynanır?",
+    "watchVideo": "Videoyu İzle",
+    "browserNotSupported": "Tarayıcınız video oynatmayı desteklemiyor"
+  },
   "partyModeInfo": {
     "description": "4-16 oyuncu için turnuva modu, ağaç ve istatistiklerle",
     "welcome": "Turnuva tarzı çok oyunculu oyunlar için parti moduna hoş geldiniz!",

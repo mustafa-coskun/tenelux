@@ -10,6 +10,7 @@ import { ConnectionDebug } from './ConnectionDebug';
 import { getEnvironmentService } from '../config/environment';
 import { AdBanner } from './AdBanner';
 import { AdPlacement } from '../services/AdService';
+import { HowToPlayVideo } from './HowToPlayVideo';
 import teneluxLongBg from '../assets/tenelux_long.png';
 import teneluxWideBg from '../assets/tenelux_wide.png';
 // import { MultiplayerTestPanel } from './MultiplayerTestPanel';
@@ -253,6 +254,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({
 
         <div className="game-rules">
           <h3>{t('mainMenu.theRules')}</h3>
+          
+          {/* How to Play Video */}
+          <HowToPlayVideo />
+          
           <ul>
             <li>{t('mainMenu.rule1')}</li>
             <li>

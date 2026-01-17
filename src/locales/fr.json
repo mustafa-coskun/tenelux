@@ -21,6 +21,11 @@
     "partyMode": "Mode Fête",
     "tutorial": "Tutoriel"
   },
+  "video": {
+    "howToPlay": "Comment jouer ?",
+    "watchVideo": "Regarder la vidéo",
+    "browserNotSupported": "Votre navigateur ne prend pas en charge la lecture vidéo"
+  },
   "partyModeInfo": {
     "description": "Mode tournoi pour 4-16 joueurs avec tableaux et statistiques",
     "welcome": "Bienvenue au Mode Fête pour les jeux multijoueurs de style tournoi !",

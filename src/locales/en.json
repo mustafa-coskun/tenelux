@@ -21,6 +21,11 @@
     "partyMode": "Party Mode",
     "tutorial": "Tutorial"
   },
+  "video": {
+    "howToPlay": "How to Play?",
+    "watchVideo": "Watch the Video",
+    "browserNotSupported": "Your browser does not support video playback"
+  },
   "partyModeInfo": {
     "description": "Tournament mode for 4-16 players with brackets and statistics",
     "welcome": "Welcome to Party Mode for tournament-style multiplayer games!",

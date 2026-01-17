@@ -75,6 +75,21 @@
     "rule5": "Construye tu reputación a lo largo de múltiples rondas",
     "multiplayerAlert": "¡El modo multijugador llega pronto! Por ahora disfruta del modo un jugador con personajes IA."
   },
+  "menu": {
+    "title": "TENELUX",
+    "subtitle": "Dilema del Prisionero",
+    "singlePlayer": "Un jugador",
+    "multiplayer": "Multijugador",
+    "settings": "Configuración",
+    "about": "Acerca de",
+    "partyMode": "Modo fiesta",
+    "tutorial": "Tutorial"
+  },
+  "video": {
+    "howToPlay": "¿Cómo jugar?",
+    "watchVideo": "Ver el video",
+    "browserNotSupported": "Su navegador no admite la reproducción de video"
+  },
   "gameBoard": {
     "vs": "VS",
     "opponent": "Oponente",

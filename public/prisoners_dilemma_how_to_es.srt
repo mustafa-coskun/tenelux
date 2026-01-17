@@ -1,0 +1,39 @@
+1
+00:00:00,352 --> 00:00:02,488
+Los jugadores juegan uno contra el otro. Cada
+
+2
+00:00:02,488 --> 00:00:05,335
+uno tiene 2 opciones. Pueden cooperar o
+
+3
+00:00:05,335 --> 00:00:07,868
+pueden traicionar. Si ambos cooperan,
+
+4
+00:00:07,868 --> 00:00:10,805
+cada uno obtiene 3 monedas. Si uno
+
+5
+00:00:10,805 --> 00:00:12,763
+coopera pero el otro traiciona, entonces
+
+6
+00:00:12,763 --> 00:00:15,700
+el que traicionó obtiene 5 monedas y el
+
+7
+00:00:15,700 --> 00:00:17,984
+otro no obtiene nada. Y si ambos
+
+8
+00:00:17,984 --> 00:00:20,921
+traicionan, cada uno obtiene una moneda. El objetivo
+
+9
+00:00:20,921 --> 00:00:23,858
+del juego es simple: obtener tantas
+
+10
+00:00:23,858 --> 00:00:25,163
+monedas como sea posible.
