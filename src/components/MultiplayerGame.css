@@ -751,3 +751,57 @@
     padding: 15px 30px;
   }
 }
+
+/* Game Code Display */
+.game-code-display {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: rgba(255, 107, 107, 0.1);
+  border: 2px solid rgba(255, 107, 107, 0.3);
+  border-radius: 12px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.game-code-display h3 {
+  font-size: 1.5rem;
+  color: #ff6b6b;
+  margin-bottom: 1rem;
+  font-weight: 300;
+  letter-spacing: 1px;
+}
+
+.code-box {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1.5rem 3rem;
+  border-radius: 8px;
+  letter-spacing: 8px;
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+  margin: 1rem 0;
+  user-select: all;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.code-box:hover {
+  background: rgba(255, 107, 107, 0.2);
+  transform: scale(1.05);
+}
+
+.game-code-display p {
+  font-size: 1rem;
+  color: #b0b0b0;
+  margin-top: 1rem;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 107, 107, 0.6);
+  }
+}

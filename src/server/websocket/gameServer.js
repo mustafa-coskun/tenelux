@@ -500,6 +500,184 @@ class GameServer {
                 }
                 break;
 
+            case 'CREATE_PRIVATE_GAME':
+                if (!ws.clientId) {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: 'Not registered' }));
+                    return;
+                }
+
+                try {
+                    const gameCode = this.generateGameCode();
+                    this.privateGames.set(gameCode, {
+                        hostId: ws.clientId,
+                        hostPlayer: data.player,
+                        guestId: null,
+                        guestPlayer: null,
+                        status: 'waiting',
+                        createdAt: Date.now()
+                    });
+
+                    console.log('🎮 Private game created:', {
+                        gameCode,
+                        hostId: ws.clientId,
+                        hostName: data.player.name
+                    });
+
+                    ws.send(JSON.stringify({
+                        type: 'PRIVATE_GAME_CREATED',
+                        gameCode: gameCode
+                    }));
+                } catch (error) {
+                    console.error('Failed to create private game:', error);
+                    ws.send(JSON.stringify({
+                        type: 'ERROR',
+                        message: 'Failed to create private game'
+                    }));
+                }
+                break;
+
+            case 'JOIN_PRIVATE_GAME':
+                if (!ws.clientId) {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: 'Not registered' }));
+                    return;
+                }
+
+                try {
+                    const { gameCode } = data;
+                    const privateGame = this.privateGames.get(gameCode);
+
+                    if (!privateGame) {
+                        ws.send(JSON.stringify({
+                            type: 'ERROR',
+                            message: 'Oyun kodu bulunamadı'
+                        }));
+                        return;
+                    }
+
+                    if (privateGame.status !== 'waiting') {
+                        ws.send(JSON.stringify({
+                            type: 'ERROR',
+                            message: 'Bu oyun zaten başlamış'
+                        }));
+                        return;
+                    }
+
+                    if (privateGame.hostId === ws.clientId) {
+                        ws.send(JSON.stringify({
+                            type: 'ERROR',
+                            message: 'Kendi oyununuza katılamazsınız'
+                        }));
+                        return;
+                    }
+
+                    // Update private game with guest
+                    privateGame.guestId = ws.clientId;
+                    privateGame.guestPlayer = data.player;
+                    privateGame.status = 'matched';
+
+                    console.log('🎮 Player joined private game:', {
+                        gameCode,
+                        guestId: ws.clientId,
+                        guestName: data.player.name
+                    });
+
+                    // Create match
+                    const matchId = generateId();
+                    const match = {
+                        matchId: matchId,
+                        player1: {
+                            playerId: privateGame.hostId,
+                            player: privateGame.hostPlayer,
+                            decisions: [],
+                            disconnected: false
+                        },
+                        player2: {
+                            playerId: privateGame.guestId,
+                            player: privateGame.guestPlayer,
+                            decisions: [],
+                            disconnected: false
+                        },
+                        currentRound: 0,
+                        maxRounds: 10,
+                        scores: { player1: 0, player2: 0 },
+                        gameState: 'active',
+                        createdAt: Date.now(),
+                        isPrivateGame: true,
+                        gameCode: gameCode
+                    };
+
+                    this.activeMatches.set(matchId, match);
+
+                    // Notify both players
+                    const hostWs = this.connectedClients.get(privateGame.hostId);
+                    const guestWs = this.connectedClients.get(privateGame.guestId);
+
+                    if (hostWs && hostWs.readyState === WebSocket.OPEN) {
+                        hostWs.send(JSON.stringify({
+                            type: 'MATCH_FOUND',
+                            matchId: matchId,
+                            opponent: privateGame.guestPlayer,
+                            isPlayer1: true
+                        }));
+                    }
+
+                    if (guestWs && guestWs.readyState === WebSocket.OPEN) {
+                        guestWs.send(JSON.stringify({
+                            type: 'MATCH_FOUND',
+                            matchId: matchId,
+                            opponent: privateGame.hostPlayer,
+                            isPlayer1: false
+                        }));
+                    }
+
+                    // Start first round
+                    setTimeout(() => {
+                        this.broadcastToMatch(matchId, {
+                            type: 'NEW_ROUND',
+                            round: 1,
+                            timerDuration: 30000
+                        });
+                    }, 2000);
+
+                    console.log('[WS INFO] Private game match created', {
+                        matchId: matchId,
+                        gameCode: gameCode,
+                        player1: privateGame.hostPlayer.name,
+                        player2: privateGame.guestPlayer.name
+                    });
+
+                } catch (error) {
+                    console.error('Failed to join private game:', error);
+                    ws.send(JSON.stringify({
+                        type: 'ERROR',
+                        message: 'Failed to join private game'
+                    }));
+                }
+                break;
+
+            case 'CANCEL_PRIVATE_GAME':
+                if (!ws.clientId) {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: 'Not registered' }));
+                    return;
+                }
+
+                try {
+                    // Find and remove the private game
+                    for (const [gameCode, privateGame] of this.privateGames.entries()) {
+                        if (privateGame.hostId === ws.clientId && privateGame.status === 'waiting') {
+                            this.privateGames.delete(gameCode);
+                            console.log('🎮 Private game cancelled:', gameCode);
+                            ws.send(JSON.stringify({
+                                type: 'PRIVATE_GAME_CANCELLED'
+                            }));
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to cancel private game:', error);
+                }
+                break;
+
             case 'FORFEIT_MATCH':
                 console.log('🏳️ FORFEIT_MATCH received from:', ws.clientId);
                 
@@ -2854,6 +3032,21 @@ class GameServer {
         // Ensure uniqueness
         if (this.partyLobbies?.has(result)) {
             return this.generateLobbyCode();
+        }
+
+        return result;
+    }
+
+    generateGameCode() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < 8; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+
+        // Ensure uniqueness
+        if (this.privateGames?.has(result)) {
+            return this.generateGameCode();
         }
 
         return result;

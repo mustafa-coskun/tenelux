@@ -42,6 +42,8 @@ export class WebSocketGameClient extends BaseWebSocketClient {
   private onDecisionChangedHandler: ((data: any) => void) | null = null;
   private onFinalScoresUpdateHandler: ((data: any) => void) | null = null;
   private onWaitingForOtherPlayerHandler: ((data: any) => void) | null = null;
+  private onPrivateGameCreatedHandler: ((gameCode: string) => void) | null = null;
+  private onPrivateGameCancelledHandler: (() => void) | null = null;
 
   constructor() {
     super();
@@ -226,6 +228,20 @@ export class WebSocketGameClient extends BaseWebSocketClient {
         // No need to do anything, player already returned to menu
         break;
 
+      case 'PRIVATE_GAME_CREATED':
+        console.log('🎮 Multiplayer Client - Private game created:', message.gameCode);
+        if (this.onPrivateGameCreatedHandler) {
+          this.onPrivateGameCreatedHandler(message.gameCode);
+        }
+        break;
+
+      case 'PRIVATE_GAME_CANCELLED':
+        console.log('🎮 Multiplayer Client - Private game cancelled');
+        if (this.onPrivateGameCancelledHandler) {
+          this.onPrivateGameCancelledHandler();
+        }
+        break;
+
       case 'ERROR':
         console.error('❌ Multiplayer Client - Server error:', message.message);
         if (this.onErrorHandler) {
@@ -260,6 +276,30 @@ export class WebSocketGameClient extends BaseWebSocketClient {
   leaveQueue(): void {
     this.send({
       type: 'LEAVE_QUEUE',
+    });
+  }
+
+  createPrivateGame(player: Player): void {
+    console.log('🎮 Multiplayer Client - Creating private game');
+    this.send({
+      type: 'CREATE_PRIVATE_GAME',
+      player: player,
+    });
+  }
+
+  joinPrivateGame(player: Player, gameCode: string): void {
+    console.log('🎮 Multiplayer Client - Joining private game:', gameCode);
+    this.send({
+      type: 'JOIN_PRIVATE_GAME',
+      player: player,
+      gameCode: gameCode,
+    });
+  }
+
+  cancelPrivateGame(): void {
+    console.log('🎮 Multiplayer Client - Cancelling private game');
+    this.send({
+      type: 'CANCEL_PRIVATE_GAME',
     });
   }
 
@@ -432,5 +472,13 @@ export class WebSocketGameClient extends BaseWebSocketClient {
 
   onWaitingForOtherPlayer(handler: (data: any) => void): void {
     this.onWaitingForOtherPlayerHandler = handler;
+  }
+
+  onPrivateGameCreated(handler: (gameCode: string) => void): void {
+    this.onPrivateGameCreatedHandler = handler;
+  }
+
+  onPrivateGameCancelled(handler: () => void): void {
+    this.onPrivateGameCancelledHandler = handler;
   }
 }

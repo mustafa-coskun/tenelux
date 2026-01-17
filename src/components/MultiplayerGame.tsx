@@ -1042,14 +1042,32 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       wsClient.current.onConnected(() => {
         console.log('🎮 Connected to game server');
         console.log('Current state when connected:', currentStateRef.current);
+        console.log('Selected mode:', selectedMode);
+        console.log('Game code:', gameCode);
 
         setConnectionError(null);
 
         if (currentMatchIdRef.current && currentStateRef.current === MultiplayerState.IN_GAME) {
           console.log('🔄 Reconnected during game, staying in game state');
         } else if (currentStateRef.current === MultiplayerState.CONNECTING) {
-          console.log('🔄 Connected while in CONNECTING state, transitioning to LOBBY');
-          setMultiplayerState(MultiplayerState.LOBBY);
+          console.log('🔄 Connected while in CONNECTING state');
+          
+          // Handle private game modes
+          if (selectedMode === MultiplayerMode.CREATE_GAME) {
+            console.log('🎮 Creating private game');
+            const player = userToPlayer(humanPlayer);
+            wsClient.current?.createPrivateGame(player);
+            setMultiplayerState(MultiplayerState.WAITING_FOR_OPPONENT);
+          } else if (selectedMode === MultiplayerMode.JOIN_GAME && gameCode) {
+            console.log('🔍 Joining private game with code:', gameCode);
+            const player = userToPlayer(humanPlayer);
+            wsClient.current?.joinPrivateGame(player, gameCode);
+            setMultiplayerState(MultiplayerState.MATCHMAKING);
+          } else {
+            // Random match mode
+            console.log('🔄 Transitioning to LOBBY for random match');
+            setMultiplayerState(MultiplayerState.LOBBY);
+          }
         } else {
           console.log('📋 No mode selected - showing mode selection');
           setMultiplayerState(MultiplayerState.MODE_SELECTION);
@@ -1070,6 +1088,18 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         setCurrentMatchId(data.matchId);
         setOpponent(data.opponent);
         createMatch(data.opponent);
+      });
+
+      wsClient.current.onPrivateGameCreated((code: string) => {
+        console.log('🎮 Private game created with code:', code);
+        setGameCode(code);
+        setMultiplayerState(MultiplayerState.WAITING_FOR_OPPONENT);
+      });
+
+      wsClient.current.onPrivateGameCancelled(() => {
+        console.log('🎮 Private game cancelled');
+        setGameCode(null);
+        setMultiplayerState(MultiplayerState.MODE_SELECTION);
       });
 
       wsClient.current.onOpponentDisconnected(() => {
@@ -1478,6 +1508,29 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
             </p>
             <button onClick={handleLeaveQueue} className="cancel-btn">
               {t('common.cancel')}
+            </button>
+          </div>
+        );
+
+      case MultiplayerState.WAITING_FOR_OPPONENT:
+        return (
+          <div className="multiplayer-status">
+            <h2>🎮 Oyun Oluşturuldu!</h2>
+            <div className="game-code-display">
+              <h3>Oyun Kodu:</h3>
+              <div className="code-box">{gameCode}</div>
+              <p>Bu kodu arkadaşınla paylaş</p>
+            </div>
+            <div className="loading-spinner"></div>
+            <p>Rakip bekleniyor...</p>
+            <button 
+              onClick={() => {
+                wsClient.current?.cancelPrivateGame();
+                setMultiplayerState(MultiplayerState.MODE_SELECTION);
+              }} 
+              className="cancel-btn"
+            >
+              İptal
             </button>
           </div>
         );
