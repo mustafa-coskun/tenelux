@@ -8,12 +8,22 @@ interface HowToPlayVideoProps {
 
 export const HowToPlayVideo: React.FC<HowToPlayVideoProps> = ({ className = '' }) => {
   const { t, currentLanguage } = useTranslation();
-  const [showVideo, setShowVideo] = useState(false);
+  const [subtitlesEnabled, setSubtitlesEnabled] = useState(true);
+  const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage);
+  const [showControls, setShowControls] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const getSubtitleFile = () => {
+  const languages = [
+    { code: 'en', name: 'English', flag: '🇺🇸' },
+    { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
+    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+    { code: 'fr', name: 'Français', flag: '🇫🇷' }
+  ];
+
+  const getSubtitleFile = (langCode: string) => {
     const timestamp = Date.now();
-    switch (currentLanguage) {
+    switch (langCode) {
       case 'tr':
         return `/prisoners_dilemma_how_to_tr.srt?v=${timestamp}`;
       case 'de':
@@ -27,56 +37,119 @@ export const HowToPlayVideo: React.FC<HowToPlayVideoProps> = ({ className = '' }
     }
   };
 
-  const handleToggleVideo = () => {
-    setShowVideo(!showVideo);
-  };
-
-  const handleVideoLoad = () => {
+  const updateSubtitles = () => {
     if (videoRef.current) {
-      // Altyazıyı otomatik aktif et
-      const tracks = videoRef.current.textTracks;
-      if (tracks.length > 0) {
-        tracks[0].mode = 'showing';
-        console.log('Subtitle enabled for language:', currentLanguage);
+      const video = videoRef.current;
+      
+      // Mevcut track'leri temizle
+      const existingTracks = video.querySelectorAll('track');
+      existingTracks.forEach(track => track.remove());
+      
+      // Yeni track ekle
+      if (subtitlesEnabled) {
+        const track = document.createElement('track');
+        track.kind = 'subtitles';
+        track.src = getSubtitleFile(selectedLanguage);
+        track.srclang = selectedLanguage;
+        track.label = languages.find(l => l.code === selectedLanguage)?.name || selectedLanguage.toUpperCase();
+        track.default = true;
+        
+        video.appendChild(track);
+        
+        // Track yüklendikten sonra aktif et
+        setTimeout(() => {
+          const tracks = video.textTracks;
+          if (tracks.length > 0) {
+            tracks[0].mode = 'showing';
+          }
+        }, 100);
       }
     }
   };
 
-  return (
-    <div className={`how-to-play-video ${className}`}>
-      <button className="toggle-video-btn" onClick={handleToggleVideo}>
-        <div className="play-icon">{showVideo ? '📹' : '▶️'}</div>
-        <span>{t('video.howToPlay')}</span>
-        <small>{showVideo ? t('video.hideVideo') : t('video.watchVideo')}</small>
-      </button>
+  const handleSubtitleToggle = () => {
+    setSubtitlesEnabled(!subtitlesEnabled);
+  };
 
-      {showVideo && (
-        <div className="embedded-video-container">
-          <video
-            key={`embedded-video-${currentLanguage}`}
-            ref={videoRef}
-            controls
-            onLoadedData={handleVideoLoad}
-            className="embedded-video"
-            preload="metadata"
-            width="100%"
-            height="auto"
+  const handleLanguageChange = (langCode: string) => {
+    setSelectedLanguage(langCode as typeof currentLanguage);
+    setShowControls(false);
+  };
+
+  // Altyazı durumu veya dil değiştiğinde güncelle
+  useEffect(() => {
+    updateSubtitles();
+  }, [subtitlesEnabled, selectedLanguage]);
+
+  // Ana dil değiştiğinde seçili dili güncelle
+  useEffect(() => {
+    setSelectedLanguage(currentLanguage);
+  }, [currentLanguage]);
+
+  const handleVideoLoad = () => {
+    updateSubtitles();
+  };
+
+  const selectedLang = languages.find(l => l.code === selectedLanguage);
+
+  return (
+    <div className={`iframe-video-player ${className}`}>
+      <div className="video-header">
+        <h4>{t('video.howToPlay')}</h4>
+        <div className="video-controls">
+          <button 
+            className={`subtitle-toggle ${subtitlesEnabled ? 'active' : ''}`}
+            onClick={handleSubtitleToggle}
+            title={subtitlesEnabled ? t('video.hideSubtitles') : t('video.showSubtitles')}
           >
-            <source src={`/prisoners_dilemma_how_to.mp4?v=${Date.now()}`} type="video/mp4" />
-            <track
-              kind="subtitles"
-              src={getSubtitleFile()}
-              srcLang={currentLanguage}
-              label={currentLanguage.toUpperCase()}
-              default
-            />
-            {t('video.browserNotSupported')}
-          </video>
-          <div className="video-info">
-            <small>🎬 {t('video.gameExplanation')}</small>
+            📝 {subtitlesEnabled ? 'ON' : 'OFF'}
+          </button>
+          
+          <div className="language-selector">
+            <button 
+              className="language-btn"
+              onClick={() => setShowControls(!showControls)}
+              title={t('video.selectLanguage')}
+            >
+              {selectedLang?.flag} {selectedLang?.name}
+            </button>
+            
+            {showControls && (
+              <div className="language-dropdown">
+                {languages.map(lang => (
+                  <button
+                    key={lang.code}
+                    className={`language-option ${selectedLanguage === lang.code ? 'selected' : ''}`}
+                    onClick={() => handleLanguageChange(lang.code)}
+                  >
+                    {lang.flag} {lang.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
+      
+      <div className="video-frame">
+        <video
+          key={`iframe-video-${selectedLanguage}-${subtitlesEnabled}`}
+          ref={videoRef}
+          controls
+          onLoadedData={handleVideoLoad}
+          className="iframe-video"
+          preload="metadata"
+          width="100%"
+          height="auto"
+        >
+          <source src={`/prisoners_dilemma_how_to.mp4?v=${Date.now()}`} type="video/mp4" />
+          {t('video.browserNotSupported')}
+        </video>
+      </div>
+      
+      <div className="video-footer">
+        <small>🎬 {t('video.gameExplanation')}</small>
+      </div>
     </div>
   );
 };

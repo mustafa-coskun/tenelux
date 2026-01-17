@@ -147,6 +147,9 @@
     "howToPlay": "Nasıl Oynanır?",
     "watchVideo": "Videoyu İzle",
     "hideVideo": "Video Gizle",
+    "showSubtitles": "Altyazıları Göster",
+    "hideSubtitles": "Altyazıları Gizle",
+    "selectLanguage": "Dil Seç",
     "gameExplanation": "Mahkum İkilemi oyun kuralları",
     "browserNotSupported": "Tarayıcınız video oynatmayı desteklemiyor"
   },

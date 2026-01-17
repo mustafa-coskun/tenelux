@@ -1,99 +1,149 @@
-/* How to Play Video Component - Embedded Version */
-.how-to-play-video {
+/* How to Play Video Component - Iframe Style */
+.iframe-video-player {
   margin: 1.5rem 0;
-}
-
-.toggle-video-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-  border: none;
+  background: rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(255, 107, 107, 0.3);
   border-radius: 12px;
-  padding: 1.5rem 2rem;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.video-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(238, 90, 82, 0.1) 100%);
+  border-bottom: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.video-header h4 {
+  margin: 0;
+  color: #ff6b6b;
   font-family: 'Cinzel', serif;
-  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-  width: 100%;
-  max-width: 300px;
-  margin: 0 auto;
-}
-
-.toggle-video-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
-  background: linear-gradient(135deg, #ee5a52 0%, #ff6b6b 100%);
-}
-
-.toggle-video-btn:active {
-  transform: translateY(0);
-}
-
-.play-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-}
-
-.toggle-video-btn span {
   font-size: 1.2rem;
   font-weight: 600;
-  margin-bottom: 0.25rem;
-  letter-spacing: 1px;
 }
 
-.toggle-video-btn small {
-  font-size: 0.9rem;
-  opacity: 0.8;
-  font-style: italic;
+.video-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
-/* Embedded Video Container */
-.embedded-video-container {
-  margin-top: 1.5rem;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-  padding: 1rem;
-  border: 2px solid rgba(255, 107, 107, 0.2);
-  animation: slideDown 0.3s ease;
+.subtitle-toggle {
+  background: rgba(255, 107, 107, 0.2);
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
 }
 
-.embedded-video {
-  width: 100%;
-  max-width: 600px;
-  height: auto;
-  border-radius: 8px;
+.subtitle-toggle:hover {
+  background: rgba(255, 107, 107, 0.3);
+}
+
+.subtitle-toggle.active {
+  background: rgba(255, 107, 107, 0.6);
+  border-color: rgba(255, 107, 107, 0.8);
+}
+
+.language-selector {
+  position: relative;
+}
+
+.language-btn {
+  background: rgba(255, 107, 107, 0.2);
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.language-btn:hover {
+  background: rgba(255, 107, 107, 0.3);
+}
+
+.language-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: rgba(26, 26, 26, 0.95);
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  border-radius: 6px;
+  min-width: 120px;
+  z-index: 1000;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  animation: dropdownSlide 0.2s ease;
+}
+
+.language-option {
   display: block;
-  margin: 0 auto;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.2s ease;
 }
 
-.video-info {
+.language-option:hover {
+  background: rgba(255, 107, 107, 0.2);
+}
+
+.language-option.selected {
+  background: rgba(255, 107, 107, 0.4);
+  color: #ff6b6b;
+}
+
+.video-frame {
+  position: relative;
+  background: #000;
+}
+
+.iframe-video {
+  width: 100%;
+  height: auto;
+  display: block;
+  min-height: 200px;
+}
+
+.video-footer {
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.05);
   text-align: center;
-  margin-top: 0.5rem;
-  padding: 0.5rem;
+  border-top: 1px solid rgba(255, 107, 107, 0.1);
 }
 
-.video-info small {
+.video-footer small {
   color: #b0b0b0;
   font-style: italic;
 }
 
 /* Video controls styling */
-.embedded-video::-webkit-media-controls-panel {
+.iframe-video::-webkit-media-controls-panel {
   background-color: rgba(0, 0, 0, 0.8);
 }
 
-.embedded-video::-webkit-media-controls-current-time-display,
-.embedded-video::-webkit-media-controls-time-remaining-display {
+.iframe-video::-webkit-media-controls-current-time-display,
+.iframe-video::-webkit-media-controls-time-remaining-display {
   color: white;
 }
 
 /* Subtitle styling */
-.embedded-video::cue {
+.iframe-video::cue {
   background-color: rgba(0, 0, 0, 0.8);
   color: white;
   font-size: 16px;
@@ -104,10 +154,10 @@
 }
 
 /* Animations */
-@keyframes slideDown {
+@keyframes dropdownSlide {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
@@ -117,39 +167,43 @@
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-  .embedded-video-container {
-    padding: 0.5rem;
-    margin-top: 1rem;
+  .video-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
   }
   
-  .toggle-video-btn {
-    padding: 1.2rem 1.5rem;
-    max-width: 250px;
+  .video-controls {
+    align-self: stretch;
+    justify-content: space-between;
   }
   
-  .play-icon {
-    font-size: 2rem;
+  .language-dropdown {
+    right: auto;
+    left: 0;
   }
   
-  .toggle-video-btn span {
-    font-size: 1.1rem;
-  }
-  
-  .toggle-video-btn small {
-    font-size: 0.8rem;
-  }
-  
-  .embedded-video::cue {
+  .iframe-video::cue {
     font-size: 14px;
   }
 }
 
 @media (max-width: 480px) {
-  .embedded-video-container {
-    padding: 0.25rem;
+  .video-header {
+    padding: 0.75rem;
   }
   
-  .embedded-video::cue {
+  .video-header h4 {
+    font-size: 1rem;
+  }
+  
+  .subtitle-toggle,
+  .language-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .iframe-video::cue {
     font-size: 12px;
     padding: 2px 4px;
   }
