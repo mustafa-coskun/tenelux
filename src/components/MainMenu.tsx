@@ -256,7 +256,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
           <h3>{t('mainMenu.theRules')}</h3>
           
           {/* How to Play Video */}
-          <HowToPlayVideo />
+          <HowToPlayVideo key={`video-${currentLanguage}`} />
           
           <ul>
             <li>{t('mainMenu.rule1')}</li>

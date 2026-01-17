@@ -75,6 +75,18 @@ export const HowToPlayVideo: React.FC<HowToPlayVideoProps> = ({ className = '' }
       if (tracks.length > 0) {
         tracks[0].mode = 'showing';
         console.log('Enabled track:', tracks[0].label, tracks[0].language);
+        
+        // Track'in cue'larını kontrol et
+        const track = tracks[0];
+        if (track.cues && track.cues.length > 0) {
+          console.log('Track has', track.cues.length, 'cues');
+        } else {
+          console.log('Track has no cues, trying to load...');
+          // Track yüklenmesini bekle
+          track.addEventListener('load', () => {
+            console.log('Track loaded with', track.cues?.length, 'cues');
+          });
+        }
       }
     }
   };
@@ -94,7 +106,38 @@ export const HowToPlayVideo: React.FC<HowToPlayVideoProps> = ({ className = '' }
 
   const handleVideoLoad = () => {
     console.log('Video loaded, enabling subtitles');
-    enableSubtitles();
+    setTimeout(() => {
+      enableSubtitles();
+      // Altyazıları manuel olarak göster
+      if (videoRef.current) {
+        const video = videoRef.current;
+        video.textTracks[0].mode = 'showing';
+        
+        // Video element'ine subtitle attribute ekle
+        video.setAttribute('crossorigin', 'anonymous');
+        
+        // Track element'ini yeniden oluştur
+        const existingTrack = video.querySelector('track');
+        if (existingTrack) {
+          existingTrack.remove();
+        }
+        
+        const newTrack = document.createElement('track');
+        newTrack.kind = 'subtitles';
+        newTrack.src = getSubtitleFile();
+        newTrack.srclang = currentLanguage;
+        newTrack.label = currentLanguage.toUpperCase();
+        newTrack.default = true;
+        
+        video.appendChild(newTrack);
+        
+        // Track yüklendikten sonra aktif et
+        newTrack.addEventListener('load', () => {
+          console.log('New track loaded');
+          newTrack.track.mode = 'showing';
+        });
+      }
+    }, 500);
   };
 
   const handleVideoCanPlay = () => {
