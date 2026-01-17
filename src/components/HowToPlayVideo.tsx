@@ -10,43 +10,73 @@ export const HowToPlayVideo: React.FC<HowToPlayVideoProps> = ({ className = '' }
   const { t, currentLanguage } = useTranslation();
   const [isPlaying, setIsPlaying] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
-  const [videoKey, setVideoKey] = useState(0); // Video'yu force re-render için
+  const [videoKey, setVideoKey] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const getSubtitleFile = () => {
+    const timestamp = Date.now(); // Cache busting
     switch (currentLanguage) {
       case 'tr':
-        return '/prisoners_dilemma_how_to_tr.srt';
+        return `/prisoners_dilemma_how_to_tr.srt?v=${timestamp}`;
       case 'de':
-        return '/prisoners_dilemma_how_to_de.srt';
+        return `/prisoners_dilemma_how_to_de.srt?v=${timestamp}`;
       case 'fr':
-        return '/prisoners_dilemma_how_to_fr.srt';
+        return `/prisoners_dilemma_how_to_fr.srt?v=${timestamp}`;
       case 'es':
-        return '/prisoners_dilemma_how_to_es.srt';
+        return `/prisoners_dilemma_how_to_es.srt?v=${timestamp}`;
       default:
-        return '/prisoners_dilemma_how_to.srt'; // English
+        return `/prisoners_dilemma_how_to.srt?v=${timestamp}`; // English
     }
   };
 
-  // Dil değiştiğinde video'yu yeniden render et
+  // Dil değiştiğinde video'yu tamamen yeniden oluştur
   useEffect(() => {
-    setVideoKey(prev => prev + 1);
     console.log('Language changed to:', currentLanguage);
+    setVideoKey(prev => prev + 1);
+    
+    // Eğer video açıksa, kapat ve yeniden aç
+    if (showVideo) {
+      setShowVideo(false);
+      setTimeout(() => {
+        setShowVideo(true);
+      }, 100);
+    }
   }, [currentLanguage]);
 
   const handlePlayClick = () => {
     setShowVideo(true);
     setTimeout(() => {
       if (videoRef.current) {
-        videoRef.current.play();
-        setIsPlaying(true);
-        // Altyazıyı aktif et
-        const tracks = videoRef.current.textTracks;
-        if (tracks.length > 0) {
-          tracks[0].mode = 'showing';
+        // Video yüklendikten sonra play et
+        const playPromise = videoRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            setIsPlaying(true);
+            enableSubtitles();
+          }).catch(error => {
+            console.log('Video play failed:', error);
+          });
         }
       }
-    }, 200);
+    }, 300);
+  };
+
+  const enableSubtitles = () => {
+    if (videoRef.current) {
+      const tracks = videoRef.current.textTracks;
+      console.log('Available tracks:', tracks.length);
+      
+      // Tüm track'leri disable et
+      for (let i = 0; i < tracks.length; i++) {
+        tracks[i].mode = 'disabled';
+      }
+      
+      // İlk track'i enable et
+      if (tracks.length > 0) {
+        tracks[0].mode = 'showing';
+        console.log('Enabled track:', tracks[0].label, tracks[0].language);
+      }
+    }
   };
 
   const handleVideoEnd = () => {
@@ -63,17 +93,17 @@ export const HowToPlayVideo: React.FC<HowToPlayVideoProps> = ({ className = '' }
   };
 
   const handleVideoLoad = () => {
-    if (videoRef.current) {
-      // Altyazıyı otomatik aktif et
-      const tracks = videoRef.current.textTracks;
-      if (tracks.length > 0) {
-        tracks[0].mode = 'showing';
-      }
-    }
+    console.log('Video loaded, enabling subtitles');
+    enableSubtitles();
+  };
+
+  const handleVideoCanPlay = () => {
+    console.log('Video can play, tracks available');
+    setTimeout(enableSubtitles, 100);
   };
 
   return (
-    <div className={`how-to-play-video ${className}`} key={`video-component-${currentLanguage}`}>
+    <div className={`how-to-play-video ${className}`}>
       {!showVideo ? (
         <button className="play-video-btn" onClick={handlePlayClick}>
           <div className="play-icon">▶️</div>
@@ -87,21 +117,22 @@ export const HowToPlayVideo: React.FC<HowToPlayVideoProps> = ({ className = '' }
               ✕
             </button>
             <video
-              key={`video-${videoKey}`} // Video'yu force re-render
+              key={`video-${videoKey}-${currentLanguage}`}
               ref={videoRef}
               controls
               onEnded={handleVideoEnd}
               onLoadedData={handleVideoLoad}
+              onCanPlay={handleVideoCanPlay}
               className="game-video"
               crossOrigin="anonymous"
               preload="metadata"
             >
-              <source src="/prisoners_dilemma_how_to.mp4" type="video/mp4" />
+              <source src={`/prisoners_dilemma_how_to.mp4?v=${Date.now()}`} type="video/mp4" />
               <track
                 kind="subtitles"
                 src={getSubtitleFile()}
                 srcLang={currentLanguage}
-                label={`${currentLanguage.toUpperCase()} Subtitles`}
+                label={`${currentLanguage.toUpperCase()}`}
                 default
               />
               {t('video.browserNotSupported')}
