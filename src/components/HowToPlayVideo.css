@@ -1,9 +1,9 @@
-/* How to Play Video Component */
+/* How to Play Video Component - Embedded Version */
 .how-to-play-video {
   margin: 1.5rem 0;
 }
 
-.play-video-btn {
+.toggle-video-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -22,13 +22,13 @@
   margin: 0 auto;
 }
 
-.play-video-btn:hover {
+.toggle-video-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
   background: linear-gradient(135deg, #ee5a52 0%, #ff6b6b 100%);
 }
 
-.play-video-btn:active {
+.toggle-video-btn:active {
   transform: translateY(0);
 }
 
@@ -38,89 +38,65 @@
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
-.play-video-btn span {
+.toggle-video-btn span {
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
   letter-spacing: 1px;
 }
 
-.play-video-btn small {
+.toggle-video-btn small {
   font-size: 0.9rem;
   opacity: 0.8;
   font-style: italic;
 }
 
-/* Video Overlay */
-.video-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  animation: fadeIn 0.3s ease;
-}
-
-.video-container {
-  position: relative;
-  width: 90%;
-  max-width: 800px;
-  background: #000;
+/* Embedded Video Container */
+.embedded-video-container {
+  margin-top: 1.5rem;
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  padding: 1rem;
+  border: 2px solid rgba(255, 107, 107, 0.2);
+  animation: slideDown 0.3s ease;
 }
 
-.close-video-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(0, 0, 0, 0.7);
-  border: none;
-  color: white;
-  font-size: 1.5rem;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.close-video-btn:hover {
-  background: rgba(255, 107, 107, 0.8);
-  transform: scale(1.1);
-}
-
-.game-video {
+.embedded-video {
   width: 100%;
+  max-width: 600px;
   height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   display: block;
+  margin: 0 auto;
+}
+
+.video-info {
+  text-align: center;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+}
+
+.video-info small {
+  color: #b0b0b0;
+  font-style: italic;
 }
 
 /* Video controls styling */
-.game-video::-webkit-media-controls-panel {
+.embedded-video::-webkit-media-controls-panel {
   background-color: rgba(0, 0, 0, 0.8);
 }
 
-.game-video::-webkit-media-controls-current-time-display,
-.game-video::-webkit-media-controls-time-remaining-display {
+.embedded-video::-webkit-media-controls-current-time-display,
+.embedded-video::-webkit-media-controls-time-remaining-display {
   color: white;
 }
 
 /* Subtitle styling */
-.game-video::cue {
+.embedded-video::cue {
   background-color: rgba(0, 0, 0, 0.8);
   color: white;
-  font-size: 18px;
+  font-size: 16px;
   font-family: Arial, sans-serif;
   text-shadow: 1px 1px 1px black;
   padding: 4px 8px;
@@ -128,23 +104,25 @@
 }
 
 /* Animations */
-@keyframes fadeIn {
+@keyframes slideDown {
   from {
     opacity: 0;
+    transform: translateY(-20px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-  .video-container {
-    width: 95%;
-    margin: 1rem;
+  .embedded-video-container {
+    padding: 0.5rem;
+    margin-top: 1rem;
   }
   
-  .play-video-btn {
+  .toggle-video-btn {
     padding: 1.2rem 1.5rem;
     max-width: 250px;
   }
@@ -153,26 +131,26 @@
     font-size: 2rem;
   }
   
-  .play-video-btn span {
+  .toggle-video-btn span {
     font-size: 1.1rem;
   }
   
-  .play-video-btn small {
+  .toggle-video-btn small {
     font-size: 0.8rem;
+  }
+  
+  .embedded-video::cue {
+    font-size: 14px;
   }
 }
 
 @media (max-width: 480px) {
-  .video-container {
-    width: 98%;
-    margin: 0.5rem;
+  .embedded-video-container {
+    padding: 0.25rem;
   }
   
-  .close-video-btn {
-    top: 5px;
-    right: 5px;
-    width: 35px;
-    height: 35px;
-    font-size: 1.3rem;
+  .embedded-video::cue {
+    font-size: 12px;
+    padding: 2px 4px;
   }
 }
