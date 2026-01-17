@@ -10,6 +10,7 @@ export const HowToPlayVideo: React.FC<HowToPlayVideoProps> = ({ className = '' }
   const { t, currentLanguage } = useTranslation();
   const [isPlaying, setIsPlaying] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [videoKey, setVideoKey] = useState(0); // Video'yu force re-render için
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const getSubtitleFile = () => {
@@ -27,36 +28,11 @@ export const HowToPlayVideo: React.FC<HowToPlayVideoProps> = ({ className = '' }
     }
   };
 
-  // Dil değiştiğinde altyazıları güncelle
+  // Dil değiştiğinde video'yu yeniden render et
   useEffect(() => {
-    if (videoRef.current && showVideo) {
-      const tracks = videoRef.current.textTracks;
-      // Mevcut track'leri temizle
-      for (let i = 0; i < tracks.length; i++) {
-        tracks[i].mode = 'disabled';
-      }
-      
-      // Video'yu yeniden yükle (altyazı değişikliği için)
-      const currentTime = videoRef.current.currentTime;
-      const wasPlaying = !videoRef.current.paused;
-      
-      videoRef.current.load();
-      
-      videoRef.current.addEventListener('loadeddata', () => {
-        if (videoRef.current) {
-          videoRef.current.currentTime = currentTime;
-          if (wasPlaying) {
-            videoRef.current.play();
-          }
-          // Yeni altyazıyı aktif et
-          const newTracks = videoRef.current.textTracks;
-          if (newTracks.length > 0) {
-            newTracks[0].mode = 'showing';
-          }
-        }
-      }, { once: true });
-    }
-  }, [currentLanguage, showVideo]);
+    setVideoKey(prev => prev + 1);
+    console.log('Language changed to:', currentLanguage);
+  }, [currentLanguage]);
 
   const handlePlayClick = () => {
     setShowVideo(true);
@@ -70,7 +46,7 @@ export const HowToPlayVideo: React.FC<HowToPlayVideoProps> = ({ className = '' }
           tracks[0].mode = 'showing';
         }
       }
-    }, 100);
+    }, 200);
   };
 
   const handleVideoEnd = () => {
@@ -86,8 +62,18 @@ export const HowToPlayVideo: React.FC<HowToPlayVideoProps> = ({ className = '' }
     setShowVideo(false);
   };
 
+  const handleVideoLoad = () => {
+    if (videoRef.current) {
+      // Altyazıyı otomatik aktif et
+      const tracks = videoRef.current.textTracks;
+      if (tracks.length > 0) {
+        tracks[0].mode = 'showing';
+      }
+    }
+  };
+
   return (
-    <div className={`how-to-play-video ${className}`}>
+    <div className={`how-to-play-video ${className}`} key={`video-component-${currentLanguage}`}>
       {!showVideo ? (
         <button className="play-video-btn" onClick={handlePlayClick}>
           <div className="play-icon">▶️</div>
@@ -101,19 +87,21 @@ export const HowToPlayVideo: React.FC<HowToPlayVideoProps> = ({ className = '' }
               ✕
             </button>
             <video
+              key={`video-${videoKey}`} // Video'yu force re-render
               ref={videoRef}
               controls
               onEnded={handleVideoEnd}
+              onLoadedData={handleVideoLoad}
               className="game-video"
               crossOrigin="anonymous"
+              preload="metadata"
             >
               <source src="/prisoners_dilemma_how_to.mp4" type="video/mp4" />
               <track
-                key={currentLanguage} // Key ekleyerek React'in track'i yeniden render etmesini sağla
                 kind="subtitles"
                 src={getSubtitleFile()}
                 srcLang={currentLanguage}
-                label={currentLanguage.toUpperCase()}
+                label={`${currentLanguage.toUpperCase()} Subtitles`}
                 default
               />
               {t('video.browserNotSupported')}

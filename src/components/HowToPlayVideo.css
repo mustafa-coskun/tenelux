@@ -106,6 +106,27 @@
   display: block;
 }
 
+/* Video controls styling */
+.game-video::-webkit-media-controls-panel {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.game-video::-webkit-media-controls-current-time-display,
+.game-video::-webkit-media-controls-time-remaining-display {
+  color: white;
+}
+
+/* Subtitle styling */
+.game-video::cue {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 18px;
+  font-family: Arial, sans-serif;
+  text-shadow: 1px 1px 1px black;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {
