@@ -1029,6 +1029,9 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     console.log('🎯 isConnected:', wsClient.current?.isConnected());
     
     setSelectedMode(mode);
+    if (code) {
+      setGameCode(code);
+    }
     
     // Create WebSocket client if it doesn't exist (for normal multiplayer)
     if (!wsClient.current) {
@@ -1042,8 +1045,8 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       wsClient.current.onConnected(() => {
         console.log('🎮 Connected to game server');
         console.log('Current state when connected:', currentStateRef.current);
-        console.log('Selected mode:', selectedMode);
-        console.log('Game code:', gameCode);
+        console.log('Selected mode from closure:', mode);
+        console.log('Game code from parameter:', code);
 
         setConnectionError(null);
 
@@ -1052,16 +1055,16 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         } else if (currentStateRef.current === MultiplayerState.CONNECTING) {
           console.log('🔄 Connected while in CONNECTING state');
           
-          // Handle private game modes
-          if (selectedMode === MultiplayerMode.CREATE_GAME) {
+          // Handle private game modes using closure variables
+          if (mode === MultiplayerMode.CREATE_GAME) {
             console.log('🎮 Creating private game');
             const player = userToPlayer(humanPlayer);
             wsClient.current?.createPrivateGame(player);
             setMultiplayerState(MultiplayerState.WAITING_FOR_OPPONENT);
-          } else if (selectedMode === MultiplayerMode.JOIN_GAME && gameCode) {
-            console.log('🔍 Joining private game with code:', gameCode);
+          } else if (mode === MultiplayerMode.JOIN_GAME && code) {
+            console.log('🔍 Joining private game with code:', code);
             const player = userToPlayer(humanPlayer);
-            wsClient.current?.joinPrivateGame(player, gameCode);
+            wsClient.current?.joinPrivateGame(player, code);
             setMultiplayerState(MultiplayerState.MATCHMAKING);
           } else {
             // Random match mode
@@ -1374,9 +1377,7 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         console.log('⚠️ WebSocket already connected or client is null');
       }
     } else if (mode === MultiplayerMode.CREATE_GAME) {
-      const newCode = generateGameCode();
-      console.log('🎮 CREATE_GAME: Generated code:', newCode);
-      setGameCode(newCode);
+      console.log('🎮 CREATE_GAME: Setting state to CONNECTING');
       setMultiplayerState(MultiplayerState.CONNECTING);
       if (wsClient.current && !wsClient.current.isConnected()) {
         console.log('🔌 Starting WebSocket connection...');
@@ -1386,7 +1387,6 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       }
     } else if (mode === MultiplayerMode.JOIN_GAME && code) {
       console.log('🔍 JOIN_GAME: Code:', code);
-      setGameCode(code);
       setMultiplayerState(MultiplayerState.CONNECTING);
       if (wsClient.current && !wsClient.current.isConnected()) {
         console.log('🔌 Starting WebSocket connection...');
